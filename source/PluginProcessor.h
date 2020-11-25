@@ -39,8 +39,6 @@ public:
         wetDry_ID
     };
 
-    
-
     //==============================================================================
     KcompAudioProcessor();
     ~KcompAudioProcessor() override;
@@ -55,6 +53,12 @@ public:
 
     void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
 
+
+    void setFilterBypass(bool);
+    void setInputGain(double);
+    void setMakeUpGain(double);
+    void setRatio(juce::String);
+    float getRatioValue(juce::String);
 
 
     //==============================================================================
@@ -92,7 +96,7 @@ private:
     juce::dsp::ProcessorChain<Gain, Filter, Comp, Gain> kComp;
     juce::dsp::DryWetMixer<float> dryWet;
 
-    std::atomic<float>* inputGainParam;
+    /*std::atomic<float>* inputGainParam;
     std::atomic<float>* makeUpGainParam;
     std::atomic<float>* ratioOneParam;
     std::atomic<float>* ratioTwoParam;
@@ -102,9 +106,14 @@ private:
     std::atomic<float>* attackParam;
     std::atomic<float>* releaseParam;
     std::atomic<float>* dryWetParam;
-    std::atomic<float>* filterParam;
-    float filterFreq = 100.0f;
+    std::atomic<float>* filterParam;*/
 
+    float ratioOne{ 1.5f };
+    float ratioTwo{ 3.0f };
+    float ratioThree{ 5.0f };
+    float ratioFour{ 10.0f };
+
+    float filterFreq = 100.0f;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (KcompAudioProcessor)

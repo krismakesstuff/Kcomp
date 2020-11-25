@@ -29,7 +29,9 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
 
+    juce::String getActiveRatio();
     
+    void updateToggleState(juce::Button*, juce::String);
 
 private:
     
@@ -74,6 +76,11 @@ private:
     juce::TextButton tameButton;
     std::unique_ptr<ButtonAttachment> tameButtonAttachment;
 
+    juce::Slider dryWetSlider;
+    juce::Label dryWetLabel{ juce::String(), "Dry/Wet Mix" };
+    juce::Label dryLabel{ juce::String(), "Dry" };
+    juce::Label wetLabel{ juce::String(), "Wet" };
+    std::unique_ptr<SliderAttachment> dryWetSliderAttachment;
 
     juce::Rectangle<int> controlsBackground;
     juce::Rectangle<int> metersBackground;
@@ -88,8 +95,6 @@ private:
                                 float minSliderPos, float maxSliderPos, const juce::Slider::SliderStyle,
                                 juce::Slider& slider) override
         {
-
-            
 
         }*/
         

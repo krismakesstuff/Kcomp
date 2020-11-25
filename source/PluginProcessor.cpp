@@ -69,7 +69,7 @@ KcompAudioProcessor::KcompAudioProcessor()
                         parameters(*this, nullptr, juce::Identifier("KcompParamTree"), createParameterLayout())
 {
     
-    inputGainParam = parameters.getRawParameterValue(inputGainParam_ID);
+   /* inputGainParam = parameters.getRawParameterValue(inputGainParam_ID);
     makeUpGainParam = parameters.getRawParameterValue(makeUpGainParam_ID);
     ratioOneParam = parameters.getRawParameterValue(ratioOneParam_ID);
     ratioTwoParam = parameters.getRawParameterValue(ratioTwoParam_ID);
@@ -79,7 +79,7 @@ KcompAudioProcessor::KcompAudioProcessor()
     attackParam = parameters.getRawParameterValue(attackParam_ID);
     releaseParam = parameters.getRawParameterValue(releaseParam_ID);
     dryWetParam = parameters.getRawParameterValue(dryWetParam_ID);
-    filterParam = parameters.getRawParameterValue(filterParam_ID);
+    filterParam = parameters.getRawParameterValue(filterParam_ID);*/
 
 }
 
@@ -255,6 +255,53 @@ void KcompAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
 
     kComp.process(context);
 
+}
+
+
+void KcompAudioProcessor::setFilterBypass(bool isFilterBypassed)
+{
+    kComp.setBypassed<filter_ID>(isFilterBypassed);
+}
+
+void KcompAudioProcessor::setInputGain(double newInputGain)
+{
+    auto& inputGain = kComp.get<inputGain_ID>();
+    inputGain.setGainLinear((float)newInputGain);
+}
+
+
+void KcompAudioProcessor::setMakeUpGain(double newGain)
+{
+    auto& makeUp = kComp.get<makeUpGain_ID>();
+    makeUp.setGainLinear((float)newGain);
+}
+
+void KcompAudioProcessor::setRatio(juce::String newRatioID)
+{
+    auto& ratio = kComp.get<compressor_ID>();
+    ratio.setRatio(getRatioValue(newRatioID));
+}
+
+
+float KcompAudioProcessor::getRatioValue(juce::String ratioID)
+{
+    if (ratioID == ratioOneParam_ID)
+    {
+        return ratioOne;
+    }
+    else if (ratioID == ratioTwoParam_ID)
+    {
+        return ratioTwo;
+    }
+    else if (ratioID == ratioThreeParam_ID)
+    {
+        return ratioThree;
+    }
+    else if (ratioID == ratioFourParam_ID)
+    {
+        return ratioFour;
+    }
+    else return 1.0f;
 }
 
 
