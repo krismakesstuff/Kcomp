@@ -47,37 +47,25 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
 
     //Ratio Buttons
     addAndMakeVisible(ratio1Button);
-    
     ratio1Button.setButtonText("1.5");
     ratio1ButtonAttachment.reset(new ButtonAttachment(valueTreeState, ratioOneParam_ID, ratio1Button));
-    ratio1Button.onClick = [this] { audioProcessor.setRatio(getActiveRatio()); };
+    ratio1Button.onClick = [this] { updateRatioState(&ratio1Button, ratioOneParam_ID); };
     
     addAndMakeVisible(ratio2Button);
-    
     ratio2Button.setButtonText("3");
     ratio2ButtonAttachment.reset(new ButtonAttachment(valueTreeState, ratioTwoParam_ID, ratio2Button));
-    ratio2Button.onClick = [this] { audioProcessor.setRatio(getActiveRatio()); };
+    ratio2Button.onClick = [this] { updateRatioState(&ratio2Button, ratioTwoParam_ID); };
     
-
     addAndMakeVisible(ratio3Button);
-    
     ratio3Button.setButtonText("5");
     ratio3ButtonAttachment.reset(new ButtonAttachment(valueTreeState, ratioThreeParam_ID, ratio3Button));
-    ratio3Button.onClick = [this] { audioProcessor.setRatio(getActiveRatio()); };
+    ratio3Button.onClick = [this] { updateRatioState(&ratio3Button, ratioThreeParam_ID); };
     
-
     addAndMakeVisible(ratio4Button);
-    
     ratio4Button.setButtonText("10");
     ratio4ButtonAttachment.reset(new ButtonAttachment(valueTreeState, ratioFourParam_ID, ratio4Button));
-    ratio4Button.onClick = [this] { audioProcessor.setRatio(getActiveRatio()); };
+    ratio4Button.onClick = [this] { updateRatioState(&ratio4Button, ratioFourParam_ID); };
     
-
-    ratio1Button.setRadioGroupId(ratioButtonGroup, juce::dontSendNotification);
-    ratio2Button.setRadioGroupId(ratioButtonGroup, juce::dontSendNotification);
-    ratio3Button.setRadioGroupId(ratioButtonGroup, juce::dontSendNotification);
-    ratio4Button.setRadioGroupId(ratioButtonGroup, juce::dontSendNotification);
-
     ratio1Button.setConnectedEdges(juce::Button::ConnectedEdgeFlags::ConnectedOnRight);
     ratio2Button.setConnectedEdges(juce::Button::ConnectedEdgeFlags::ConnectedOnLeft + juce::Button::ConnectedEdgeFlags::ConnectedOnRight);
     ratio3Button.setConnectedEdges(juce::Button::ConnectedEdgeFlags::ConnectedOnLeft + juce::Button::ConnectedEdgeFlags::ConnectedOnRight);
@@ -87,6 +75,8 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     ratio2Button.setClickingTogglesState(true);
     ratio3Button.setClickingTogglesState(true);
     ratio4Button.setClickingTogglesState(true);
+
+    updateRatioState(&ratio1Button, ratioOneParam_ID);
 
     addAndMakeVisible(ratioLabel);
     ratioLabel.setJustificationType(juce::Justification::centred);
@@ -98,6 +88,7 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     thresholdSlider.setColour(juce::Slider::ColourIds::textBoxOutlineColourId, juce::Colours::black);
     thresholdSlider.setColour(juce::Slider::ColourIds::textBoxBackgroundColourId, juce::Colours::black);
     thresholdSliderAttachment.reset(new SliderAttachment(valueTreeState, thresholdParam_ID, thresholdSlider));
+    thresholdSlider.onValueChange = [this] { audioProcessor.setThreshold(thresholdSlider.getValue()); };
 
     addAndMakeVisible(thresholdLabel);
     thresholdLabel.attachToComponent(&thresholdSlider, false);
@@ -110,6 +101,7 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     attackSlider.setColour(juce::Slider::ColourIds::textBoxOutlineColourId, juce::Colours::black);
     attackSlider.setColour(juce::Slider::ColourIds::textBoxBackgroundColourId, juce::Colours::black);
     attackSliderAttachment.reset(new SliderAttachment(valueTreeState, attackParam_ID, attackSlider));
+    attackSlider.onValueChange = [this] { audioProcessor.setAttack(attackSlider.getValue()); };
 
     addAndMakeVisible(attackLabel);
     attackLabel.attachToComponent(&attackSlider, false);
@@ -122,6 +114,7 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     releaseSlider.setColour(juce::Slider::ColourIds::textBoxOutlineColourId, juce::Colours::black);
     releaseSlider.setColour(juce::Slider::ColourIds::textBoxBackgroundColourId, juce::Colours::black);
     releaseSliderAttachment.reset(new SliderAttachment(valueTreeState, releaseParam_ID, releaseSlider));
+    releaseSlider.onValueChange = [this] { audioProcessor.setRelease(releaseSlider.getValue()); };
 
     addAndMakeVisible(releaseLabel);
     releaseLabel.attachToComponent(&releaseSlider, false);
@@ -140,6 +133,7 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     dryWetSlider.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
     dryWetSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::NoTextBox, false, 50, 20);
     dryWetSliderAttachment.reset(new SliderAttachment(valueTreeState, dryWetParam_ID, dryWetSlider));
+    dryWetSlider.onValueChange = [this] { audioProcessor.setDryWetMix(dryWetSlider.getValue()); };
 
     addAndMakeVisible(dryLabel);
     dryLabel.setFont({ 11.0f, juce::Font::FontStyleFlags::plain });
@@ -147,14 +141,18 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     wetLabel.setFont({ 11.0f, juce::Font::FontStyleFlags::plain });
 
 
+    //RMS Labels
+    addAndMakeVisible(preRMSLabel);
+    addAndMakeVisible(postRMSLabel);
 
-
+    startTimer(500);
     setSize (650, 400);
 }
 
 KcompAudioProcessorEditor::~KcompAudioProcessorEditor()
 {
     setLookAndFeel(nullptr);
+    stopTimer();
 }
 
 //==============================================================================
@@ -185,6 +183,9 @@ void KcompAudioProcessorEditor::resized()
     controlsBackground.setBottom(getBottom() - 45);
 
     thresholdSlider.setBounds(inputSlider.getRight() + 10, controlsBackground.getY() + 50, 65, 200);
+
+    preRMSLabel.setBounds(inputSlider.getRight() + 10, controlsBackground.getBottom() - 20, 50, 20);
+    postRMSLabel.setBounds(preRMSLabel.getRight() + 5, controlsBackground.getBottom() - 20, 50, 20);
 
     ratioLabel.setBounds(controlsBackground.getRight() - 112, controlsBackground.getY() + 10, 40, 25);
     ratio1Button.setBounds(controlsBackground.getRight() - 170, controlsBackground.getY() + 40, 40, 25);
@@ -236,9 +237,21 @@ juce::String KcompAudioProcessorEditor::getActiveRatio()
 }
 
 
-//void KcompAudioProcessorEditor::updateToggleState(juce::Button* button, juce::String name)
-//{
-//    auto state = button->getToggleState();
-//
-//}
+void KcompAudioProcessorEditor::updateRatioState(juce::Button* activeButton, juce::String ratioID)
+{
+    ratio1Button.setToggleState(false, juce::dontSendNotification);
+    ratio2Button.setToggleState(false, juce::dontSendNotification);
+    ratio3Button.setToggleState(false, juce::dontSendNotification);
+    ratio4Button.setToggleState(false, juce::dontSendNotification);
 
+
+    activeButton->setToggleState(true,juce::dontSendNotification);
+    audioProcessor.setRatio(ratioID);
+}
+
+
+void KcompAudioProcessorEditor::timerCallback()
+{
+    preRMSLabel.setText(juce::String(audioProcessor.getPreRMSLevel()), juce::dontSendNotification);
+    postRMSLabel.setText(juce::String(audioProcessor.getPostRMSLevel()), juce::dontSendNotification);
+}

@@ -14,7 +14,8 @@
 //==============================================================================
 /**
 */
-class KcompAudioProcessorEditor  : public juce::AudioProcessorEditor
+class KcompAudioProcessorEditor  :  public juce::AudioProcessorEditor,
+                                    public juce::Timer
 {
 public:
 
@@ -31,7 +32,9 @@ public:
 
     juce::String getActiveRatio();
     
-    void updateToggleState(juce::Button*, juce::String);
+    void updateRatioState(juce::Button*, juce::String);
+
+    void timerCallback() override;
 
 private:
     
@@ -81,6 +84,12 @@ private:
     juce::Label dryLabel{ juce::String(), "Dry" };
     juce::Label wetLabel{ juce::String(), "Wet" };
     std::unique_ptr<SliderAttachment> dryWetSliderAttachment;
+
+    juce::Label preRMSLabel{juce::String() ,"666"};
+    juce::Label postRMSLabel{juce::String(), "5556"};
+
+
+
 
     juce::Rectangle<int> controlsBackground;
     juce::Rectangle<int> metersBackground;

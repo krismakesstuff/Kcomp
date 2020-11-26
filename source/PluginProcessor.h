@@ -59,8 +59,14 @@ public:
     void setMakeUpGain(double);
     void setRatio(juce::String);
     float getRatioValue(juce::String);
+    void setThreshold(double);
+    void setAttack(double);
+    void setRelease(double);
 
-
+    void setDryWetMix(double);
+    
+    float getPreRMSLevel();
+    float getPostRMSLevel();
     //==============================================================================
     juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
@@ -113,7 +119,15 @@ private:
     float ratioThree{ 5.0f };
     float ratioFour{ 10.0f };
 
+    float dryWetMix{ 1.0f };
+
     float filterFreq = 100.0f;
+
+    float preRMSL;
+    float preRMSR;
+
+    float postRMSL;
+    float postRMSR;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (KcompAudioProcessor)

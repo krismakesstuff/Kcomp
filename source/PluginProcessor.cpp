@@ -175,19 +175,19 @@ void KcompAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
         
     if (ratioOneVal > 0.5f)
     {
-        comp.setRatio(ratioOneVal);
+        comp.setRatio(ratioOne);
     }
     else if (ratioTwoVal > 0.5f)
     {
-        comp.setRatio(ratioTwoVal);
+        comp.setRatio(ratioTwo);
     }
     else if (ratioThreeVal > 0.5f)
     {
-        comp.setRatio(ratioThreeVal);
+        comp.setRatio(ratioThree);
     }
     else if (ratioFourVal > 0.5f)
     {
-        comp.setRatio(ratioFourVal);
+        comp.setRatio(ratioFour);
     }
 
     auto& makeUpGain = kComp.get<makeUpGain_ID>();
@@ -250,10 +250,21 @@ void KcompAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
     }*/
 
     juce::dsp::AudioBlock<float> block(buffer);
+    dryWet.pushDrySamples(block);
     juce::dsp::ProcessContextReplacing<float> context(block);
 
 
+    preRMSL = buffer.getRMSLevel(0, buffer.getSample(0, 0), buffer.getNumSamples());
+    preRMSR = buffer.getRMSLevel(1, buffer.getSample(1, 0), buffer.getNumSamples());
+
     kComp.process(context);
+
+    postRMSL = buffer.getRMSLevel(0, buffer.getSample(0, 0), buffer.getNumSamples());
+    postRMSR = buffer.getRMSLevel(1, buffer.getSample(1, 0), buffer.getNumSamples());
+
+    dryWet.mixWetSamples(context.getOutputBlock());
+    dryWet.setWetMixProportion(dryWetMix);
+    
 
 }
 
@@ -280,6 +291,7 @@ void KcompAudioProcessor::setRatio(juce::String newRatioID)
 {
     auto& ratio = kComp.get<compressor_ID>();
     ratio.setRatio(getRatioValue(newRatioID));
+    DBG(newRatioID);
 }
 
 
@@ -304,6 +316,52 @@ float KcompAudioProcessor::getRatioValue(juce::String ratioID)
     else return 1.0f;
 }
 
+void KcompAudioProcessor::setThreshold(double newThreshold)
+{
+    auto& comp = kComp.get<compressor_ID>();
+    comp.setThreshold((float)newThreshold);
+}
+
+void KcompAudioProcessor::setAttack(double newAttack)
+{
+    auto& comp = kComp.get<compressor_ID>();
+    comp.setAttack(newAttack);
+}
+
+void KcompAudioProcessor::setRelease(double newRelease)
+{
+    auto& comp = kComp.get<compressor_ID>();
+    comp.setRelease(newRelease);
+}
+
+
+void KcompAudioProcessor::setDryWetMix(double newMix)
+{
+    if (newMix > 1)
+    {
+        dryWetMix = 1.0f;
+    }
+    else
+    {
+        dryWetMix = newMix;
+    }
+    
+}
+
+
+
+
+
+
+float KcompAudioProcessor::getPreRMSLevel()
+{
+    return (preRMSL * preRMSR) / 2;
+}
+
+float KcompAudioProcessor::getPostRMSLevel()
+{
+    return (postRMSL * postRMSR) / 2;
+}
 
 //==============================================================================
 bool KcompAudioProcessor::hasEditor() const
