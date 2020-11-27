@@ -47,22 +47,22 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
 
     //Ratio Buttons
     addAndMakeVisible(ratio1Button);
-    ratio1Button.setButtonText("1.5");
+    ratio1Button.setButtonText(juce::String(audioProcessor.getRatioValue(ratioOneParam_ID)));
     ratio1ButtonAttachment.reset(new ButtonAttachment(valueTreeState, ratioOneParam_ID, ratio1Button));
     ratio1Button.onClick = [this] { updateRatioState(&ratio1Button, ratioOneParam_ID); };
     
     addAndMakeVisible(ratio2Button);
-    ratio2Button.setButtonText("3");
+    ratio2Button.setButtonText(juce::String(audioProcessor.getRatioValue(ratioTwoParam_ID)));
     ratio2ButtonAttachment.reset(new ButtonAttachment(valueTreeState, ratioTwoParam_ID, ratio2Button));
     ratio2Button.onClick = [this] { updateRatioState(&ratio2Button, ratioTwoParam_ID); };
     
     addAndMakeVisible(ratio3Button);
-    ratio3Button.setButtonText("5");
+    ratio3Button.setButtonText(juce::String(audioProcessor.getRatioValue(ratioThreeParam_ID)));
     ratio3ButtonAttachment.reset(new ButtonAttachment(valueTreeState, ratioThreeParam_ID, ratio3Button));
     ratio3Button.onClick = [this] { updateRatioState(&ratio3Button, ratioThreeParam_ID); };
     
     addAndMakeVisible(ratio4Button);
-    ratio4Button.setButtonText("10");
+    ratio4Button.setButtonText(juce::String(audioProcessor.getRatioValue(ratioFourParam_ID)));
     ratio4ButtonAttachment.reset(new ButtonAttachment(valueTreeState, ratioFourParam_ID, ratio4Button));
     ratio4Button.onClick = [this] { updateRatioState(&ratio4Button, ratioFourParam_ID); };
     

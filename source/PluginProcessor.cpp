@@ -13,13 +13,14 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
 {
     
 
-    juce::NormalisableRange<float> inputGainRange = { juce::Decibels::decibelsToGain<float>(-60.0f), juce::Decibels::decibelsToGain<float>(4.0f), 0.01f };
+    juce::NormalisableRange<float> inputGainRange = { juce::Decibels::decibelsToGain<float>(-60.0f), juce::Decibels::decibelsToGain<float>(4.0f), 0.0001f };
     float defInputGain = 1.0f;
 
-    juce::NormalisableRange <float> makeUpGainRange = { juce::Decibels::decibelsToGain<float>(0.0f), juce::Decibels::decibelsToGain<float>(15.0f), 0.01f };
+    juce::NormalisableRange <float> makeUpGainRange = { juce::Decibels::decibelsToGain<float>(0.0f), juce::Decibels::decibelsToGain<float>(15.0f), 0.0001f };
     float defMakeUpGain = 1.0f;
 
-    juce::NormalisableRange<float> thresholdRange = { juce::Decibels::decibelsToGain<float>(-60.0f),juce::Decibels::decibelsToGain<float>(0.0f), 0.01f };
+    juce::NormalisableRange<float> thresholdRange = { juce::Decibels::decibelsToGain<float>(-95.0f),juce::Decibels::decibelsToGain<float>(0.0f), 0.000001f };
+    thresholdRange.setSkewForCentre(juce::Decibels::decibelsToGain<float>(-45.0f));
     float defThreshold = 1.0f;
 
     juce::NormalisableRange<float> attackRange = { 0.0f, 2000.0f, 0.01f };
@@ -28,7 +29,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
     juce::NormalisableRange<float> releaseRange = { 0.0f, 4000.0f, 0.01f };
     float defRelease = releaseRange.convertTo0to1(100.0f);
 
-    juce::StringArray ratioStrings{ "1.5", "3", "5", "10" };
+    juce::StringArray ratioStrings{"1.5", "5.0", "10.0", "20.0" };
 
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
@@ -161,7 +162,7 @@ void KcompAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     inputGain.setGainLinear(*parameters.getRawParameterValue(inputGainParam_ID));
 
     auto& filter = kComp.get<filter_ID>();
-    filter.state = juce::dsp::IIR::Coefficients<float>::makeHighPass(sampleRate, filterFreq);
+    filter.state = juce::dsp::IIR::Coefficients<float>::makeLowPass(sampleRate, filterFreq);
 
     auto& comp = kComp.get<compressor_ID>();
     comp.setAttack(*parameters.getRawParameterValue(attackParam_ID));
@@ -319,19 +320,22 @@ float KcompAudioProcessor::getRatioValue(juce::String ratioID)
 void KcompAudioProcessor::setThreshold(double newThreshold)
 {
     auto& comp = kComp.get<compressor_ID>();
-    comp.setThreshold((float)newThreshold);
+    comp.setThreshold(juce::Decibels::gainToDecibels<float>(newThreshold));
+    DBG("Threshold: " + juce::String(newThreshold));
 }
 
 void KcompAudioProcessor::setAttack(double newAttack)
 {
     auto& comp = kComp.get<compressor_ID>();
     comp.setAttack(newAttack);
+    DBG("Attack: " + juce::String(newAttack));
 }
 
 void KcompAudioProcessor::setRelease(double newRelease)
 {
     auto& comp = kComp.get<compressor_ID>();
     comp.setRelease(newRelease);
+    DBG("Release: " + juce::String(newRelease));
 }
 
 
@@ -355,12 +359,12 @@ void KcompAudioProcessor::setDryWetMix(double newMix)
 
 float KcompAudioProcessor::getPreRMSLevel()
 {
-    return (preRMSL * preRMSR) / 2;
+    return (preRMSL + preRMSR) / 2;
 }
 
 float KcompAudioProcessor::getPostRMSLevel()
 {
-    return (postRMSL * postRMSR) / 2;
+    return (postRMSL + postRMSR) / 2;
 }
 
 //==============================================================================

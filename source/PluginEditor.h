@@ -86,7 +86,7 @@ private:
     std::unique_ptr<SliderAttachment> dryWetSliderAttachment;
 
     juce::Label preRMSLabel{juce::String() ,"666"};
-    juce::Label postRMSLabel{juce::String(), "5556"};
+    juce::Label postRMSLabel{juce::String(), "777"};
 
 
 

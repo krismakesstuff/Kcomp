@@ -59,6 +59,7 @@ public:
     void setMakeUpGain(double);
     void setRatio(juce::String);
     float getRatioValue(juce::String);
+    
     void setThreshold(double);
     void setAttack(double);
     void setRelease(double);
@@ -115,13 +116,13 @@ private:
     std::atomic<float>* filterParam;*/
 
     float ratioOne{ 1.5f };
-    float ratioTwo{ 3.0f };
-    float ratioThree{ 5.0f };
-    float ratioFour{ 10.0f };
+    float ratioTwo{ 5.0f };
+    float ratioThree{ 10.0f };
+    float ratioFour{ 20.0f };
 
     float dryWetMix{ 1.0f };
 
-    float filterFreq = 100.0f;
+    float filterFreq = 10000.0f;
 
     float preRMSL;
     float preRMSR;
