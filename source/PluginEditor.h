@@ -10,6 +10,7 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
+#include "LevelMeter.h"
 
 //==============================================================================
 /**
@@ -35,6 +36,10 @@ public:
     void updateRatioState(juce::Button*, juce::String);
 
     void timerCallback() override;
+
+    
+
+    
 
 private:
     
@@ -88,15 +93,15 @@ private:
     juce::Label preRMSLabel{juce::String() ,"666"};
     juce::Label postRMSLabel{juce::String(), "777"};
 
-
-
-
     juce::Rectangle<int> controlsBackground;
-    juce::Rectangle<int> metersBackground;
+
+    LevelMeter levelMeter;
+
 
     juce::AudioProcessorValueTreeState& valueTreeState;
     KcompAudioProcessor& audioProcessor;
 
+    
 
     struct KCompLookAndFeel : public juce::LookAndFeel_V4
     {

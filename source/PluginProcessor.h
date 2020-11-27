@@ -68,6 +68,8 @@ public:
     
     float getPreRMSLevel();
     float getPostRMSLevel();
+
+    juce::NormalisableRange<float>* getMinMax();
     //==============================================================================
     juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
@@ -126,6 +128,8 @@ private:
 
     float preRMSL;
     float preRMSR;
+
+    juce::NormalisableRange<float>minMax;
 
     float postRMSL;
     float postRMSR;

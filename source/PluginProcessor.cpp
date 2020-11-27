@@ -198,6 +198,7 @@ void KcompAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 
     kComp.prepare(spec);
     dryWet.prepare(spec);
+    dryWet.setMixingRule(juce::dsp::DryWetMixingRule::squareRoot3dB);
 
 }
 
@@ -257,6 +258,9 @@ void KcompAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
 
     preRMSL = buffer.getRMSLevel(0, buffer.getSample(0, 0), buffer.getNumSamples());
     preRMSR = buffer.getRMSLevel(1, buffer.getSample(1, 0), buffer.getNumSamples());
+
+    //minMax = buffer.findMinMax(0, buffer.getSample(0, 0), buffer.getNumSamples());
+
 
     kComp.process(context);
 
@@ -365,6 +369,11 @@ float KcompAudioProcessor::getPreRMSLevel()
 float KcompAudioProcessor::getPostRMSLevel()
 {
     return (postRMSL + postRMSR) / 2;
+}
+
+juce::NormalisableRange<float>* KcompAudioProcessor::getMinMax()
+{
+    return &minMax;
 }
 
 //==============================================================================

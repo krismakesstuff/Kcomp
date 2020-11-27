@@ -140,10 +140,12 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     addAndMakeVisible(wetLabel);
     wetLabel.setFont({ 11.0f, juce::Font::FontStyleFlags::plain });
 
-
     //RMS Labels
     addAndMakeVisible(preRMSLabel);
     addAndMakeVisible(postRMSLabel);
+
+    //Level Meter
+    addAndMakeVisible(levelMeter);
 
     startTimer(500);
     setSize (650, 400);
@@ -164,6 +166,8 @@ void KcompAudioProcessorEditor::paint (juce::Graphics& g)
     g.setColour(juce::Colours::darkgrey);
     g.fillRect(controlsBackground);
 
+    
+    
 }
 
 void KcompAudioProcessorEditor::resized()
@@ -184,6 +188,9 @@ void KcompAudioProcessorEditor::resized()
 
     thresholdSlider.setBounds(inputSlider.getRight() + 10, controlsBackground.getY() + 50, 65, 200);
 
+    levelMeter.setBounds(thresholdSlider.getRight() + 10, thresholdSlider.getY(), 45, 200);
+
+
     preRMSLabel.setBounds(inputSlider.getRight() + 10, controlsBackground.getBottom() - 20, 50, 20);
     postRMSLabel.setBounds(preRMSLabel.getRight() + 5, controlsBackground.getBottom() - 20, 50, 20);
 
@@ -202,6 +209,8 @@ void KcompAudioProcessorEditor::resized()
     dryWetSlider.setBounds(controlsBackground.getRight()/3, controlsBackground.getBottom() - 55, 265, 35);
     dryLabel.setBounds(dryWetSlider.getX() - 15, dryWetSlider.getBottom() - 10, 40, 20);
     wetLabel.setBounds(dryWetSlider.getRight() - 15 , dryWetSlider.getBottom() - 10, 40, 20);
+
+
 }
 
 juce::String KcompAudioProcessorEditor::getActiveRatio()
@@ -254,4 +263,10 @@ void KcompAudioProcessorEditor::timerCallback()
 {
     preRMSLabel.setText(juce::String(audioProcessor.getPreRMSLevel()), juce::dontSendNotification);
     postRMSLabel.setText(juce::String(audioProcessor.getPostRMSLevel()), juce::dontSendNotification);
+
+    levelMeter.setLevelMeter(audioProcessor.getPreRMSLevel());
+
+    //levelMeter.setLevelMeter(audioProcessor.getMinMax());
 }
+
+
