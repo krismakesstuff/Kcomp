@@ -146,15 +146,15 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
 
     //Level Meter
     addAndMakeVisible(levelMeter);
-
-    startTimer(500);
+    levelMeter.setMeterSource(audioProcessor.getLevelMeterGetter());
+    
     setSize (650, 400);
 }
 
 KcompAudioProcessorEditor::~KcompAudioProcessorEditor()
 {
     setLookAndFeel(nullptr);
-    stopTimer();
+    //stopTimer();
 }
 
 //==============================================================================
@@ -259,14 +259,9 @@ void KcompAudioProcessorEditor::updateRatioState(juce::Button* activeButton, juc
 }
 
 
-void KcompAudioProcessorEditor::timerCallback()
-{
-    preRMSLabel.setText(juce::String(audioProcessor.getPreRMSLevel()), juce::dontSendNotification);
-    postRMSLabel.setText(juce::String(audioProcessor.getPostRMSLevel()), juce::dontSendNotification);
-
-    levelMeter.setLevelMeter(audioProcessor.getPreRMSLevel());
-
-    //levelMeter.setLevelMeter(audioProcessor.getMinMax());
-}
-
+//void KcompAudioProcessorEditor::timerCallback()
+//{
+//    
+//    
+//}
 

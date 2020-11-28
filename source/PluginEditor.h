@@ -15,8 +15,8 @@
 //==============================================================================
 /**
 */
-class KcompAudioProcessorEditor  :  public juce::AudioProcessorEditor,
-                                    public juce::Timer
+class KcompAudioProcessorEditor  :  public juce::AudioProcessorEditor/*,
+                                    public juce::Timer*/
 {
 public:
 
@@ -35,9 +35,7 @@ public:
     
     void updateRatioState(juce::Button*, juce::String);
 
-    void timerCallback() override;
-
-    
+    /*void timerCallback() override;*/
 
     
 

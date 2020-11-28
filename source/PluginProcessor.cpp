@@ -200,6 +200,9 @@ void KcompAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     dryWet.prepare(spec);
     dryWet.setMixingRule(juce::dsp::DryWetMixingRule::squareRoot3dB);
 
+    
+    levelMeterGetter.resize(spec.numChannels, sampleRate / samplesPerBlock);
+
 }
 
 void KcompAudioProcessor::releaseResources()
@@ -256,16 +259,16 @@ void KcompAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
     juce::dsp::ProcessContextReplacing<float> context(block);
 
 
-    preRMSL = buffer.getRMSLevel(0, buffer.getSample(0, 0), buffer.getNumSamples());
-    preRMSR = buffer.getRMSLevel(1, buffer.getSample(1, 0), buffer.getNumSamples());
+    /*preRMSL = buffer.getRMSLevel(0, buffer.getSample(0, 0), buffer.getNumSamples());
+    preRMSR = buffer.getRMSLevel(1, buffer.getSample(1, 0), buffer.getNumSamples());*/
 
     //minMax = buffer.findMinMax(0, buffer.getSample(0, 0), buffer.getNumSamples());
-
+    levelMeterGetter.loadMeterData(buffer);
 
     kComp.process(context);
 
-    postRMSL = buffer.getRMSLevel(0, buffer.getSample(0, 0), buffer.getNumSamples());
-    postRMSR = buffer.getRMSLevel(1, buffer.getSample(1, 0), buffer.getNumSamples());
+   /* postRMSL = buffer.getRMSLevel(0, buffer.getSample(0, 0), buffer.getNumSamples());
+    postRMSR = buffer.getRMSLevel(1, buffer.getSample(1, 0), buffer.getNumSamples());*/
 
     dryWet.mixWetSamples(context.getOutputBlock());
     dryWet.setWetMixProportion(dryWetMix);
@@ -353,6 +356,8 @@ void KcompAudioProcessor::setDryWetMix(double newMix)
     {
         dryWetMix = newMix;
     }
+
+    DBG(juce::String(dryWetMix));
     
 }
 
@@ -369,6 +374,11 @@ float KcompAudioProcessor::getPreRMSLevel()
 float KcompAudioProcessor::getPostRMSLevel()
 {
     return (postRMSL + postRMSR) / 2;
+}
+
+LevelMeter::LevelMeterGetter* KcompAudioProcessor::getLevelMeterGetter()
+{
+    return &levelMeterGetter;
 }
 
 juce::NormalisableRange<float>* KcompAudioProcessor::getMinMax()

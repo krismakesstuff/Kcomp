@@ -9,7 +9,7 @@
 #pragma once
 
 #include <JuceHeader.h>
-
+#include "LevelMeter.h"
 //==============================================================================
 /**
 */
@@ -69,6 +69,8 @@ public:
     float getPreRMSLevel();
     float getPostRMSLevel();
 
+    LevelMeter::LevelMeterGetter* getLevelMeterGetter();
+    
     juce::NormalisableRange<float>* getMinMax();
     //==============================================================================
     juce::AudioProcessorEditor* createEditor() override;
@@ -95,6 +97,8 @@ public:
 
 private:
     
+    LevelMeter::LevelMeterGetter levelMeterGetter;
+
     juce::AudioProcessorValueTreeState parameters;
 
     using Gain = juce::dsp::Gain<float>;
