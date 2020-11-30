@@ -94,8 +94,13 @@ private:
 
     //juce::Label preRMSLabel{juce::String() ,"666"};
     //juce::Label postRMSLabel{juce::String(), "777"};
+    juce::Colour mainBGColor{ juce::Colours::lightgrey };
 
     juce::Rectangle<int> controlsBackground;
+
+    juce::Colour controlsBGColor{ juce::Colours::darkcyan };
+    juce::Colour controls1Color{ juce::Colours::darkgrey };
+    juce::Colour controls2Color{ juce::Colours::darkgreen };
 
     LevelMeter levelMeter;
 

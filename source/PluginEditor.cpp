@@ -22,8 +22,9 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     addAndMakeVisible(inputSlider);
     inputSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
     inputSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 50, 20);
-    inputSlider.setColour(juce::Slider::ColourIds::textBoxOutlineColourId, juce::Colours::black);
-    inputSlider.setColour(juce::Slider::ColourIds::textBoxBackgroundColourId, juce::Colours::darkgrey);
+    inputSlider.setColour(juce::Slider::ColourIds::textBoxOutlineColourId, juce::Colours::transparentBlack);
+    inputSlider.setColour(juce::Slider::ColourIds::textBoxBackgroundColourId, juce::Colours::transparentBlack);
+    
     inputGainAttachment.reset(new SliderAttachment(valueTreeState, inputGainParam_ID, inputSlider));
     inputSlider.onValueChange = [this] { audioProcessor.setInputGain(inputSlider.getValue()); };
 
@@ -152,8 +153,8 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     addAndMakeVisible(outputGainSlider);
     outputGainSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
     outputGainSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 50, 20);
-    outputGainSlider.setColour(juce::Slider::ColourIds::textBoxOutlineColourId, juce::Colours::black);
-    outputGainSlider.setColour(juce::Slider::ColourIds::textBoxBackgroundColourId, juce::Colours::darkgrey);
+    outputGainSlider.setColour(juce::Slider::ColourIds::textBoxOutlineColourId, juce::Colours::transparentBlack);
+    outputGainSlider.setColour(juce::Slider::ColourIds::textBoxBackgroundColourId, juce::Colours::transparentBlack);
     outputGainSliderAttachment.reset(new SliderAttachment(valueTreeState, outputGainParam_ID, outputGainSlider));
     outputGainSlider.onValueChange = [this] { audioProcessor.setOutputGain(outputGainSlider.getValue()); };
 
@@ -178,14 +179,29 @@ KcompAudioProcessorEditor::~KcompAudioProcessorEditor()
 void KcompAudioProcessorEditor::paint (juce::Graphics& g)
 {
     
-    g.fillAll(juce::Colours::grey);
+    g.fillAll(mainBGColor);
 
-    g.setColour(juce::Colours::darkgrey);
-    g.fillRect(controlsBackground);
-    g.setColour(juce::Colours::white);
-    g.drawRect(controlsBackground, 1.0f);
 
+    auto inputSliderBG = inputSlider.getBounds().withTop(controlsBackground.getY());
+    auto outputSliderBG = outputGainSlider.getBounds().withTop(controlsBackground.getY());
     
+    g.setGradientFill(juce::ColourGradient::horizontal<int>(controls1Color.brighter(), controls1Color, inputSliderBG));
+    g.fillRect(inputSliderBG);
+    g.setGradientFill(juce::ColourGradient::horizontal<int>(controls1Color, controls1Color.brighter(), outputSliderBG));
+    g.fillRect(outputSliderBG);
+
+    g.setColour(controlsBGColor);
+    g.fillRect(controlsBackground);
+    
+    auto compControlsBG = controlsBackground.withRight(thresholdSlider.getX());
+
+    g.setGradientFill(juce::ColourGradient::horizontal<int>(controls1Color, controls1Color.brighter(), compControlsBG));
+    g.fillRect(compControlsBG);
+    
+    auto dryWetControlsBG = controlsBackground.withLeft(makeUpGainSlider.getRight());
+
+    g.setGradientFill(juce::ColourGradient::horizontal<int>(controls1Color.brighter(), controls1Color, dryWetControlsBG));
+    g.fillRect(dryWetControlsBG);
     
 }
 
@@ -195,9 +211,9 @@ void KcompAudioProcessorEditor::resized()
 
     kCompTitle.setBounds((getWidth() / 2) - 50, 10, area.getWidth() - (area.getWidth() - 100), 60);
 
-    inputSlider.setBounds(area.getX() + 10, kCompTitle.getBottom() + 50, area.getWidth() - (area.getWidth() - 65), area.getHeight() - 250);
+    inputSlider.setBounds(area.getX() , kCompTitle.getBottom() + 50, area.getWidth() - (area.getWidth() - 65), area.getHeight() - 165);
 
-    outputGainSlider.setBounds(area.getRight() -  75, kCompTitle.getBottom() + 50, area.getWidth() - (area.getWidth() - 65), area.getHeight() - 250);
+    outputGainSlider.setBounds(area.getRight() -  65, kCompTitle.getBottom() + 50, area.getWidth() - (area.getWidth() - 65), area.getHeight() - 165);
 
     controlsBackground = area.reduced(10);
     controlsBackground.setLeft(inputSlider.getRight());
@@ -220,19 +236,19 @@ void KcompAudioProcessorEditor::resized()
     int space = controlsBackground.getBottom() - (controlsBackground.getHeight() / 4);
     
 
-    ratioLabel.setBounds(controlsBackground.getX() + 20,  - 175, 40, 25);
-    ratio1Button.setBounds(controlsBackground.getX() + 20, space - 145, ratioW/4, ratioH);
-    ratio2Button.setBounds(ratio1Button.getRight(), space - 145, ratioW/4, ratioH);
-    ratio3Button.setBounds(ratio2Button.getRight(), space - 145, ratioW/4, ratioH);
-    ratio4Button.setBounds(ratio3Button.getRight(), space - 145, ratioW/4, ratioH);
+    ratioLabel.setBounds(controlsBackground.getX() + 20, space  - 235, 40, 25);
+    ratio1Button.setBounds(controlsBackground.getX() + 20, space - 195, ratioW/4, ratioH);
+    ratio2Button.setBounds(ratio1Button.getRight(), space - 195, ratioW/4, ratioH);
+    ratio3Button.setBounds(ratio2Button.getRight(), space - 195, ratioW/4, ratioH);
+    ratio4Button.setBounds(ratio3Button.getRight(), space - 195, ratioW/4, ratioH);
 
-    tameButton.setBounds(controlsBackground.getX() + 40, space - 110, ratioW - 40, ratioH);
+    tameButton.setBounds(controlsBackground.getX() + 40, space - 150, ratioW - 40, ratioH);
 
-    attackSlider.setBounds(controlsBackground.getX() + 20, space - 60, ratioW, ratioH);
+    attackSlider.setBounds(controlsBackground.getX() + 20, space - 100, ratioW, ratioH);
 
     releaseSlider.setBounds(controlsBackground.getX() + 20, space, ratioW, ratioH);
 
-    dryWetSlider.setBounds(levelMeter.getRight() + 100, controlsBackground.getY() + ((controlsBackground.getHeight() /2) - 30), controlsBackground.getWidth() / 5, controlsBackground.getHeight()/7);
+    dryWetSlider.setBounds(makeUpGainSlider.getRight(), controlsBackground.getY() + ((controlsBackground.getHeight() /2) - 30), controlsBackground.getWidth() / 5, controlsBackground.getHeight()/7);
     dryLabel.setBounds(dryWetSlider.getX() , dryWetSlider.getBottom() - 10, 40, 20);
     wetLabel.setBounds(dryWetSlider.getRight() - 40 , dryWetSlider.getBottom() - 10, 40, 20);
 
