@@ -31,6 +31,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
 
     juce::StringArray ratioStrings{"1.5", "5.0", "10.0", "20.0" };
 
+    juce::NormalisableRange<float> outputGainRange = { juce::Decibels::decibelsToGain<float>(-60.0f), juce::Decibels::decibelsToGain<float>(4.0f), 0.0001f };
+    float defOutputGain = 1.0f;
+
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
     
@@ -56,6 +59,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
     layout.add(std::make_unique<juce::AudioParameterBool>(ratioTwoParam_ID, "Ratio 2", false));
     layout.add(std::make_unique<juce::AudioParameterBool>(ratioThreeParam_ID, "Ratio 3", false));
     layout.add(std::make_unique<juce::AudioParameterBool>(ratioFourParam_ID, "Ratio 4", false));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>(outputGainParam_ID, "Output Gain", outputGainRange, defOutputGain, juce::String(), juce::AudioProcessorParameter::genericParameter,
+        [](float value, int) {return juce::String(juce::Decibels::gainToDecibels(value), 1) + " dB"; },
+        [](juce::String text) {return juce::Decibels::decibelsToGain(text.dropLastCharacters(3).getFloatValue()); }));
     
     return layout;
 }
@@ -158,7 +165,7 @@ void KcompAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     spec.numChannels = getTotalNumOutputChannels();
     spec.maximumBlockSize = samplesPerBlock;
 
-    auto& inputGain = kComp.get<inputGain_ID>();
+    /*auto& inputGain = kComp.get<inputGain_ID>();*/
     inputGain.setGainLinear(*parameters.getRawParameterValue(inputGainParam_ID));
 
     auto& filter = kComp.get<filter_ID>();
@@ -172,8 +179,8 @@ void KcompAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     float ratioOneVal = *parameters.getRawParameterValue(ratioOneParam_ID);
     float ratioTwoVal = *parameters.getRawParameterValue(ratioTwoParam_ID);
     float ratioThreeVal = *parameters.getRawParameterValue(ratioThreeParam_ID);
-    float ratioFourVal = *parameters.getRawParameterValue(ratioFourParam_ID);
-        
+    float ratioFourVal = *parameters.getRawParameterValue(ratioFourParam_ID);    
+
     if (ratioOneVal > 0.5f)
     {
         comp.setRatio(ratioOne);
@@ -194,7 +201,7 @@ void KcompAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     auto& makeUpGain = kComp.get<makeUpGain_ID>();
     makeUpGain.setGainLinear(*parameters.getRawParameterValue(makeUpGainParam_ID));
 
-    
+    outputGain.setGainLinear(*parameters.getRawParameterValue(outputGainParam_ID));
 
     kComp.prepare(spec);
     dryWet.prepare(spec);
@@ -262,10 +269,14 @@ void KcompAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
     /*preRMSL = buffer.getRMSLevel(0, buffer.getSample(0, 0), buffer.getNumSamples());
     preRMSR = buffer.getRMSLevel(1, buffer.getSample(1, 0), buffer.getNumSamples());*/
 
-    //minMax = buffer.findMinMax(0, buffer.getSample(0, 0), buffer.getNumSamples());
+    inputGain.process(context);
+
     levelMeterGetter.loadMeterData(buffer);
 
     kComp.process(context);
+    
+
+    //process OutputGain
 
    /* postRMSL = buffer.getRMSLevel(0, buffer.getSample(0, 0), buffer.getNumSamples());
     postRMSR = buffer.getRMSLevel(1, buffer.getSample(1, 0), buffer.getNumSamples());*/
@@ -273,6 +284,7 @@ void KcompAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
     dryWet.mixWetSamples(context.getOutputBlock());
     dryWet.setWetMixProportion(dryWetMix);
     
+    outputGain.process(context);
 
 }
 
@@ -284,7 +296,7 @@ void KcompAudioProcessor::setFilterBypass(bool isFilterBypassed)
 
 void KcompAudioProcessor::setInputGain(double newInputGain)
 {
-    auto& inputGain = kComp.get<inputGain_ID>();
+    /*auto& inputGain = kComp.get<inputGain_ID>();*/
     inputGain.setGainLinear((float)newInputGain);
 }
 
@@ -361,7 +373,10 @@ void KcompAudioProcessor::setDryWetMix(double newMix)
     
 }
 
-
+void KcompAudioProcessor::setOutputGain(double newOutGain)
+{
+    outputGain.setGainLinear((float)newOutGain);
+}
 
 
 

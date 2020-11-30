@@ -24,6 +24,7 @@ const juce::String ratioOneParam_ID = "ratioOne";
 const juce::String ratioTwoParam_ID = "ratioTwo";
 const juce::String ratioThreeParam_ID = "ratioThree";
 const juce::String ratioFourParam_ID = "ratioFour";
+const juce::String outputGainParam_ID = "outputGain";
 
 
 class KcompAudioProcessor  : public juce::AudioProcessor
@@ -32,11 +33,11 @@ public:
 
     enum ChainIDs
     {
-        inputGain_ID,
+        /*inputGain_ID,*/
         filter_ID,
         compressor_ID,
         makeUpGain_ID,
-        wetDry_ID
+       /* wetDry_ID*/
     };
 
     //==============================================================================
@@ -66,6 +67,8 @@ public:
 
     void setDryWetMix(double);
     
+    void setOutputGain(double);
+
     float getPreRMSLevel();
     float getPostRMSLevel();
 
@@ -105,8 +108,11 @@ private:
     using Filter = juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Coefficients<float>>;
     using Comp = juce::dsp::Compressor<float>;
 
+    Gain inputGain;
 
-    juce::dsp::ProcessorChain<Gain, Filter, Comp, Gain> kComp;
+    juce::dsp::ProcessorChain<Filter, Comp, Gain> kComp;
+
+    Gain outputGain;
     juce::dsp::DryWetMixer<float> dryWet;
 
     /*std::atomic<float>* inputGainParam;

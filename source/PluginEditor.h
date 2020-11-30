@@ -88,8 +88,12 @@ private:
     juce::Label wetLabel{ juce::String(), "Wet" };
     std::unique_ptr<SliderAttachment> dryWetSliderAttachment;
 
-    juce::Label preRMSLabel{juce::String() ,"666"};
-    juce::Label postRMSLabel{juce::String(), "777"};
+    juce::Slider outputGainSlider;
+    juce::Label outputGainLabel{ juce::String(), "Output" };
+    std::unique_ptr<SliderAttachment> outputGainSliderAttachment;
+
+    //juce::Label preRMSLabel{juce::String() ,"666"};
+    //juce::Label postRMSLabel{juce::String(), "777"};
 
     juce::Rectangle<int> controlsBackground;
 

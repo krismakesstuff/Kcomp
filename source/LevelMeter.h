@@ -150,7 +150,7 @@ public:
             {
                 d.setRMSSize(size_t(rmsWindow));
             }
-            wantsLevel = true;
+            updateMeter = true;
         }
 
         template<typename FloatType>
@@ -171,17 +171,17 @@ public:
                         holdMS);
                 }
             }
-            wantsLevel = true;
+            updateMeter = true;
         }
 
-        bool isLevelWanted() const
+        bool shouldUpdateMeter() const
         {
-            return wantsLevel;
+            return updateMeter;
         }
 
-        void resetLevelWanted()
+        void resetUpdateMeter()
         {
-            wantsLevel = false;
+            updateMeter = false;
         }
 
         void setSuspended(const bool shouldBeSus)
@@ -204,11 +204,11 @@ public:
             return meterData.at(size_t(channel)).max;
         }
 
-        bool wantsLevel{ true };
-        bool suspended;
+        bool updateMeter{ true };
+        bool suspended{ false };
         std::vector<LevelMeterData> meterData;
         std::atomic<juce::int64> lastMeasurement;
-        juce::int64 holdMS;
+        juce::int64 holdMS{25};
 
         juce::WeakReference<LevelMeterGetter>::Master masterReference;
         friend class juce::WeakReference<LevelMeterGetter>;
@@ -230,12 +230,22 @@ public:
     void paint (juce::Graphics& g) override
     {
         juce::Graphics::ScopedSaveState saved(g);
-        
+        auto area = getLocalBounds().toFloat();
+
+        const auto infinity = -100.0f;
+        const auto rmsDB = juce::Decibels::gainToDecibels(source->getRMSLevel(0), infinity);
+        const auto peakDB = juce::Decibels::gainToDecibels(source->getMaxLevel(0), infinity);
+
+        levelMeterRect.setBounds(ceilf(area.getX()) + 1.0f, ceilf(area.getY()) + 1.0f,
+                floorf(area.getRight()) - (ceilf(area.getX() + 2.0f)),
+                floorf(area.getBottom()) - (ceilf(area.getY()) + 2.0f));
+
+
         g.setColour(meterBGColor);
         g.fillRect(metersBackground);
 
         g.setColour(meterColor);
-        g.fillRect(levelMeterRect.withTop(source->getRMSLevel(0)));
+        g.fillRect(levelMeterRect.withTop(levelMeterRect.getY() + rmsDB * levelMeterRect.getHeight() / infinity));
         
 
     }
@@ -282,13 +292,14 @@ public:
     void timerCallback() override
     {
 
-        if ((source && source->isLevelWanted()) || bgNeedsRepaint)
+        if ((source && source->shouldUpdateMeter()) || bgNeedsRepaint)
         {
             if (source)
             {
-                source->resetLevelWanted();
+                source->resetUpdateMeter();
                 
             }
+            setLevelMeter(source->getRMSLevel(0));
             repaint();
         }
     }
@@ -307,7 +318,7 @@ private:
     juce::Colour meterBGColor{ juce::Colours::black };
     juce::Colour meterColor{ juce::Colours::green };
 
-    int refreshRate = 30;
+    int refreshRate = 60;
     
 
 

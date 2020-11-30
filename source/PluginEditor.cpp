@@ -35,8 +35,8 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     addAndMakeVisible(makeUpGainSlider);
     makeUpGainSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
     makeUpGainSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 50, 20);
-    makeUpGainSlider.setColour(juce::Slider::ColourIds::textBoxOutlineColourId, juce::Colours::black);
-    makeUpGainSlider.setColour(juce::Slider::ColourIds::textBoxBackgroundColourId, juce::Colours::darkgrey);
+    makeUpGainSlider.setColour(juce::Slider::ColourIds::textBoxOutlineColourId, juce::Colours::darkgrey);
+    makeUpGainSlider.setColour(juce::Slider::ColourIds::textBoxBackgroundColourId, juce::Colours::black);
     makeUpGainAttachment.reset(new SliderAttachment(valueTreeState, makeUpGainParam_ID, makeUpGainSlider));
     makeUpGainSlider.onValueChange = [this] { audioProcessor.setMakeUpGain(makeUpGainSlider.getValue()); };
 
@@ -130,7 +130,7 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
 
     //DryWet
     addAndMakeVisible(dryWetSlider);
-    dryWetSlider.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
+    dryWetSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
     dryWetSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::NoTextBox, false, 50, 20);
     dryWetSliderAttachment.reset(new SliderAttachment(valueTreeState, dryWetParam_ID, dryWetSlider));
     dryWetSlider.onValueChange = [this] { audioProcessor.setDryWetMix(dryWetSlider.getValue()); };
@@ -141,14 +141,31 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     wetLabel.setFont({ 11.0f, juce::Font::FontStyleFlags::plain });
 
     //RMS Labels
-    addAndMakeVisible(preRMSLabel);
-    addAndMakeVisible(postRMSLabel);
+    //addAndMakeVisible(preRMSLabel);
+    //addAndMakeVisible(postRMSLabel);
 
     //Level Meter
     addAndMakeVisible(levelMeter);
     levelMeter.setMeterSource(audioProcessor.getLevelMeterGetter());
     
-    setSize (650, 400);
+    //Output Gain 
+    addAndMakeVisible(outputGainSlider);
+    outputGainSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
+    outputGainSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 50, 20);
+    outputGainSlider.setColour(juce::Slider::ColourIds::textBoxOutlineColourId, juce::Colours::black);
+    outputGainSlider.setColour(juce::Slider::ColourIds::textBoxBackgroundColourId, juce::Colours::darkgrey);
+    outputGainSliderAttachment.reset(new SliderAttachment(valueTreeState, outputGainParam_ID, outputGainSlider));
+    outputGainSlider.onValueChange = [this] { audioProcessor.setOutputGain(outputGainSlider.getValue()); };
+
+    addAndMakeVisible(outputGainLabel);
+    outputGainLabel.attachToComponent(&outputGainSlider, false);
+    outputGainLabel.setJustificationType(juce::Justification::centred);
+    outputGainLabel.setFont({ 15.0f, juce::Font::FontStyleFlags::plain });
+
+
+    setResizable(true, true);
+    setResizeLimits(560, 400, 1260, 900);
+    setSize (840, 600);
 }
 
 KcompAudioProcessorEditor::~KcompAudioProcessorEditor()
@@ -161,10 +178,12 @@ KcompAudioProcessorEditor::~KcompAudioProcessorEditor()
 void KcompAudioProcessorEditor::paint (juce::Graphics& g)
 {
     
-    g.fillAll(juce::Colours::black);
+    g.fillAll(juce::Colours::grey);
 
     g.setColour(juce::Colours::darkgrey);
     g.fillRect(controlsBackground);
+    g.setColour(juce::Colours::white);
+    g.drawRect(controlsBackground, 1.0f);
 
     
     
@@ -174,41 +193,48 @@ void KcompAudioProcessorEditor::resized()
 {
     auto area = getLocalBounds();
 
-    kCompTitle.setBounds((getWidth() / 2) - 50, 10, 100, 30);
+    kCompTitle.setBounds((getWidth() / 2) - 50, 10, area.getWidth() - (area.getWidth() - 100), 60);
 
-    inputSlider.setBounds(10, kCompTitle.getBottom() + 50, 65, 250);
+    inputSlider.setBounds(area.getX() + 10, kCompTitle.getBottom() + 50, area.getWidth() - (area.getWidth() - 65), area.getHeight() - 250);
 
-    makeUpGainSlider.setBounds(570, kCompTitle.getBottom() + 50, 65, 250);
+    outputGainSlider.setBounds(area.getRight() -  75, kCompTitle.getBottom() + 50, area.getWidth() - (area.getWidth() - 65), area.getHeight() - 250);
 
     controlsBackground = area.reduced(10);
     controlsBackground.setLeft(inputSlider.getRight());
-    controlsBackground.setRight(makeUpGainSlider.getX());
+    controlsBackground.setRight(outputGainSlider.getX());
     controlsBackground.setTop(kCompTitle.getBottom() + 10);
     controlsBackground.setBottom(getBottom() - 45);
 
-    thresholdSlider.setBounds(inputSlider.getRight() + 10, controlsBackground.getY() + 50, 65, 200);
 
-    levelMeter.setBounds(thresholdSlider.getRight() + 10, thresholdSlider.getY(), 45, 200);
+    thresholdSlider.setBounds((controlsBackground.getWidth() / 3) + 20, controlsBackground.getY() + 50, controlsBackground.getWidth() / 7, controlsBackground.getHeight() - 100);
+
+    levelMeter.setBounds(thresholdSlider.getRight() + 10, controlsBackground.getY() + 50, controlsBackground.getWidth()/5, controlsBackground.getHeight() - 100);
+
+    makeUpGainSlider.setBounds(levelMeter.getRight() + 10, controlsBackground.getY() + 50, controlsBackground.getWidth() / 7, controlsBackground.getHeight() - 100);
 
 
-    preRMSLabel.setBounds(inputSlider.getRight() + 10, controlsBackground.getBottom() - 20, 50, 20);
-    postRMSLabel.setBounds(preRMSLabel.getRight() + 5, controlsBackground.getBottom() - 20, 50, 20);
+    //preRMSLabel.setBounds(inputSlider.getRight() + 10, controlsBackground.getBottom() - 20, 50, 20);
+    //postRMSLabel.setBounds(preRMSLabel.getRight() + 5, controlsBackground.getBottom() - 20, 50, 20);
+    int ratioH = controlsBackground.getHeight() / 15;
+    int ratioW = (controlsBackground.getWidth() /5) - 15;
+    int space = controlsBackground.getBottom() - (controlsBackground.getHeight() / 4);
+    
 
-    ratioLabel.setBounds(controlsBackground.getRight() - 112, controlsBackground.getY() + 10, 40, 25);
-    ratio1Button.setBounds(controlsBackground.getRight() - 170, controlsBackground.getY() + 40, 40, 25);
-    ratio2Button.setBounds(ratio1Button.getRight(), controlsBackground.getY() + 40, 40, 25);
-    ratio3Button.setBounds(ratio2Button.getRight(), controlsBackground.getY() + 40, 40, 25);
-    ratio4Button.setBounds(ratio3Button.getRight(), controlsBackground.getY() + 40, 40, 25);
+    ratioLabel.setBounds(controlsBackground.getX() + 20,  - 175, 40, 25);
+    ratio1Button.setBounds(controlsBackground.getX() + 20, space - 145, ratioW/4, ratioH);
+    ratio2Button.setBounds(ratio1Button.getRight(), space - 145, ratioW/4, ratioH);
+    ratio3Button.setBounds(ratio2Button.getRight(), space - 145, ratioW/4, ratioH);
+    ratio4Button.setBounds(ratio3Button.getRight(), space - 145, ratioW/4, ratioH);
 
-    tameButton.setBounds(controlsBackground.getRight() - 140, controlsBackground.getBottom() - 230, 100, 30);
+    tameButton.setBounds(controlsBackground.getX() + 40, space - 110, ratioW - 40, ratioH);
 
-    attackSlider.setBounds(controlsBackground.getRight() - 170, controlsBackground.getBottom() - 175, 160, 40);
+    attackSlider.setBounds(controlsBackground.getX() + 20, space - 60, ratioW, ratioH);
 
-    releaseSlider.setBounds(controlsBackground.getRight() - 170, controlsBackground.getBottom() - 110, 160, 40);
+    releaseSlider.setBounds(controlsBackground.getX() + 20, space, ratioW, ratioH);
 
-    dryWetSlider.setBounds(controlsBackground.getRight()/3, controlsBackground.getBottom() - 55, 265, 35);
-    dryLabel.setBounds(dryWetSlider.getX() - 15, dryWetSlider.getBottom() - 10, 40, 20);
-    wetLabel.setBounds(dryWetSlider.getRight() - 15 , dryWetSlider.getBottom() - 10, 40, 20);
+    dryWetSlider.setBounds(levelMeter.getRight() + 100, controlsBackground.getY() + ((controlsBackground.getHeight() /2) - 30), controlsBackground.getWidth() / 5, controlsBackground.getHeight()/7);
+    dryLabel.setBounds(dryWetSlider.getX() , dryWetSlider.getBottom() - 10, 40, 20);
+    wetLabel.setBounds(dryWetSlider.getRight() - 40 , dryWetSlider.getBottom() - 10, 40, 20);
 
 
 }
