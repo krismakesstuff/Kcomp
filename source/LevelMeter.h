@@ -33,9 +33,19 @@ public:
                 rmsHistory((size_t) rmsWindow, 0.0),
                 rmsSum(0.0),
                 rmsPtr(0)
-                {}
-            //FIND ERROR C2280
-            //LEFT OFF HERE!
+            {}
+
+            LevelMeterData(const LevelMeterData& other) :
+                max(other.max.load()),
+                maxOverall(other.maxOverall.load()),
+                clip(other.clip.load()),
+                reduction(other.reduction.load()),
+                hold(other.hold.load()),
+                rmsHistory(8, 0.0),
+                rmsSum(0.0),
+                rmsPtr(0)
+            {}
+            
             LevelMeterData& operator=(const LevelMeterData& other)
             {
                 max.store(other.max.load());
