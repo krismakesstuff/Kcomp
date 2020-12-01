@@ -31,9 +31,11 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
 
-    juce::String getActiveRatio();
+    juce::Button& getActiveRatio();
     
     void updateRatioState(juce::Button*, juce::String);
+
+
 
     /*void timerCallback() override;*/
 
@@ -94,7 +96,7 @@ private:
 
     //juce::Label preRMSLabel{juce::String() ,"666"};
     //juce::Label postRMSLabel{juce::String(), "777"};
-    juce::Colour mainBGColor{ juce::Colours::lightgrey };
+    juce::Colour mainBGColor{ juce::Colours::black };
 
     juce::Rectangle<int> controlsBackground;
 

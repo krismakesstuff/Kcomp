@@ -20,11 +20,10 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
 
     //Input 
     addAndMakeVisible(inputSlider);
-    inputSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
+    inputSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
     inputSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 50, 20);
     inputSlider.setColour(juce::Slider::ColourIds::textBoxOutlineColourId, juce::Colours::transparentBlack);
     inputSlider.setColour(juce::Slider::ColourIds::textBoxBackgroundColourId, juce::Colours::transparentBlack);
-    
     inputGainAttachment.reset(new SliderAttachment(valueTreeState, inputGainParam_ID, inputSlider));
     inputSlider.onValueChange = [this] { audioProcessor.setInputGain(inputSlider.getValue()); };
 
@@ -81,6 +80,7 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
 
     addAndMakeVisible(ratioLabel);
     ratioLabel.setJustificationType(juce::Justification::centred);
+    ratioLabel.setFont({ 12.0f, juce::Font::FontStyleFlags::plain });
 
     //Threshold
     addAndMakeVisible(thresholdSlider);
@@ -97,10 +97,10 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
 
     //Attack
     addAndMakeVisible(attackSlider);
-    attackSlider.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
-    attackSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxAbove, false, 50, 20);
-    attackSlider.setColour(juce::Slider::ColourIds::textBoxOutlineColourId, juce::Colours::black);
-    attackSlider.setColour(juce::Slider::ColourIds::textBoxBackgroundColourId, juce::Colours::black);
+    attackSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
+    attackSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 50, 20);
+    attackSlider.setColour(juce::Slider::ColourIds::textBoxOutlineColourId, juce::Colours::transparentBlack);
+    attackSlider.setColour(juce::Slider::ColourIds::textBoxBackgroundColourId, juce::Colours::transparentBlack);
     attackSliderAttachment.reset(new SliderAttachment(valueTreeState, attackParam_ID, attackSlider));
     attackSlider.onValueChange = [this] { audioProcessor.setAttack(attackSlider.getValue()); };
 
@@ -110,10 +110,10 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
 
     //Release
     addAndMakeVisible(releaseSlider);
-    releaseSlider.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
-    releaseSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxAbove, false, 50, 20);
-    releaseSlider.setColour(juce::Slider::ColourIds::textBoxOutlineColourId, juce::Colours::black);
-    releaseSlider.setColour(juce::Slider::ColourIds::textBoxBackgroundColourId, juce::Colours::black);
+    releaseSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
+    releaseSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 50, 20);
+    releaseSlider.setColour(juce::Slider::ColourIds::textBoxOutlineColourId, juce::Colours::transparentBlack);
+    releaseSlider.setColour(juce::Slider::ColourIds::textBoxBackgroundColourId, juce::Colours::transparentBlack);
     releaseSliderAttachment.reset(new SliderAttachment(valueTreeState, releaseParam_ID, releaseSlider));
     releaseSlider.onValueChange = [this] { audioProcessor.setRelease(releaseSlider.getValue()); };
 
@@ -151,7 +151,7 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     
     //Output Gain 
     addAndMakeVisible(outputGainSlider);
-    outputGainSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
+    outputGainSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
     outputGainSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 50, 20);
     outputGainSlider.setColour(juce::Slider::ColourIds::textBoxOutlineColourId, juce::Colours::transparentBlack);
     outputGainSlider.setColour(juce::Slider::ColourIds::textBoxBackgroundColourId, juce::Colours::transparentBlack);
@@ -182,19 +182,23 @@ void KcompAudioProcessorEditor::paint (juce::Graphics& g)
     
 
     //Outside Sliders
-    auto inputSliderBG = inputSlider.getBounds().withTop(controlsBackground.getY());
-    auto outputSliderBG = outputGainSlider.getBounds().withTop(controlsBackground.getY());
+    /*auto inputSliderBG = inputSlider.getBounds().withTop(controlsBackground.getY());
+    auto outputSliderBG = outputGainSlider.getBounds().withTop(controlsBackground.getY());*/
+
     //Left side of Rectangle
     auto compControlsBG = controlsBackground.withRight(thresholdSlider.getX());
+
     //Right side of Rectangle
     auto dryWetControlsBG = controlsBackground.withLeft(makeUpGainSlider.getRight());
+
     //Middle of Rectangle
-    auto centerBG = controlsBackground.withLeft(compControlsBG.getRight()).withRight(dryWetControlsBG.getX());
+    auto centerBG = controlsBackground.withLeft(compControlsBG.getRight() - 5).withRight(dryWetControlsBG.getX() + 5);
     auto leftCenterBG = centerBG.withRight(centerBG.getCentreX());
     auto rightCenterBG = centerBG.withLeft(centerBG.getCentreX());
+
     //Borders
-    auto topBorder = controlsBackground.withBottom(controlsBackground.getY() + 75).withLeft(inputSliderBG.getX()).withRight(outputSliderBG.getRight());
-    auto bottomBorder = controlsBackground.withTop(controlsBackground.getBottom() - 75).withLeft(inputSliderBG.getX()).withRight(outputSliderBG.getRight());
+    auto topBorder = controlsBackground.withBottom(controlsBackground.getY() + 200);
+    auto bottomBorder = controlsBackground.withTop(controlsBackground.getBottom() - 200);
 
 
     //-----Fills-----//
@@ -204,22 +208,24 @@ void KcompAudioProcessorEditor::paint (juce::Graphics& g)
     g.fillAll(mainBGColor.darker());
 
     //Outside Sliders
-    g.setGradientFill(juce::ColourGradient::horizontal<int>(controls1Color.brighter(), controls1Color, inputSliderBG));
+    /*g.setGradientFill(juce::ColourGradient::horizontal<int>(controls1Color.brighter(), controls1Color, inputSliderBG));
     g.fillRect(inputSliderBG);
     g.setGradientFill(juce::ColourGradient::horizontal<int>(controls1Color, controls1Color.brighter(), outputSliderBG));
-    g.fillRect(outputSliderBG);
+    g.fillRect(outputSliderBG);*/
 
-    //Rectangle between the Sliders
+    //Kcomp Rectangle
     g.setColour(controlsBGColor);
-    g.fillRect(controlsBackground);
+    //g.fillRect(controlsBackground);
+    g.drawRoundedRectangle(controlsBackground.toFloat().expanded(0.5f, 0.5f), 4.0f, 4.0f);
+    //g.fillRoundedRectangle(controlsBackground.toFloat(), 5.0f);
 
     //Left side of Rectangle
-    g.setGradientFill(juce::ColourGradient::horizontal<int>(controls1Color, controls1Color.brighter(), compControlsBG));
-    g.fillRect(compControlsBG);
+    g.setGradientFill(juce::ColourGradient::horizontal<int>(controls1Color.brighter(), controls1Color, compControlsBG));
+    g.fillRoundedRectangle(compControlsBG.toFloat(), 6.5f);
 
     //Right side of Rectangle
-    g.setGradientFill(juce::ColourGradient::horizontal<int>(controls1Color.brighter(), controls1Color, dryWetControlsBG));
-    g.fillRect(dryWetControlsBG);
+    g.setGradientFill(juce::ColourGradient::horizontal<int>(controls1Color, controls1Color.brighter(), dryWetControlsBG));
+    g.fillRoundedRectangle(dryWetControlsBG.toFloat(), 6.5f);
     
     //Middle of Rectangle
     g.setGradientFill(juce::ColourGradient::horizontal<int>(controlsBGColor.darker(), controlsBGColor.brighter(), leftCenterBG));
@@ -242,80 +248,83 @@ void KcompAudioProcessorEditor::resized()
 
     kCompTitle.setBounds((getWidth() / 2) - 50, 10, area.getWidth() - (area.getWidth() - 100), 60);
 
-    inputSlider.setBounds(area.getX() , kCompTitle.getBottom() + 50, area.getWidth() - (area.getWidth() - 65), area.getHeight() - 165);
+    //inputSlider.setBounds(area.getX() , kCompTitle.getBottom() + 50, area.getWidth() - (area.getWidth() - 65), area.getHeight() - 165);
 
-    outputGainSlider.setBounds(area.getRight() -  65, kCompTitle.getBottom() + 50, area.getWidth() - (area.getWidth() - 65), area.getHeight() - 165);
+    //outputGainSlider.setBounds(area.getRight() -  65, kCompTitle.getBottom() + 50, area.getWidth() - (area.getWidth() - 65), area.getHeight() - 165);
 
     controlsBackground = area.reduced(10);
-    controlsBackground.setLeft(inputSlider.getRight());
-    controlsBackground.setRight(outputGainSlider.getX());
+    controlsBackground.setLeft(area.getX() + 10);
+    controlsBackground.setRight(area.getRight() - 10);
     controlsBackground.setTop(kCompTitle.getBottom() + 10);
     controlsBackground.setBottom(getBottom() - 45);
 
 
-    thresholdSlider.setBounds((controlsBackground.getWidth() / 3) + 20, controlsBackground.getY() + 50, controlsBackground.getWidth() / 7, controlsBackground.getHeight() - 100);
-
-    levelMeter.setBounds(thresholdSlider.getRight() + 10, controlsBackground.getY() + 50, controlsBackground.getWidth()/5, controlsBackground.getHeight() - 100);
-
-    makeUpGainSlider.setBounds(levelMeter.getRight() + 10, controlsBackground.getY() + 50, controlsBackground.getWidth() / 7, controlsBackground.getHeight() - 100);
+    thresholdSlider.setBounds((controlsBackground.getWidth() / 4.5) + 30, controlsBackground.getY() + 50, controlsBackground.getWidth() / 7, controlsBackground.getHeight() - 55);
+    levelMeter.setBounds(thresholdSlider.getRight() + 10, controlsBackground.getY() + 50, controlsBackground.getWidth()/5, controlsBackground.getHeight() - 75);
+    makeUpGainSlider.setBounds(levelMeter.getRight() + 10, controlsBackground.getY() + 50, controlsBackground.getWidth() / 7, controlsBackground.getHeight() - 55);
 
 
     //preRMSLabel.setBounds(inputSlider.getRight() + 10, controlsBackground.getBottom() - 20, 50, 20);
     //postRMSLabel.setBounds(preRMSLabel.getRight() + 5, controlsBackground.getBottom() - 20, 50, 20);
-    int ratioH = controlsBackground.getHeight() / 15;
-    int ratioW = (controlsBackground.getWidth() /5) - 15;
-    int space = controlsBackground.getBottom() - (controlsBackground.getHeight() / 4);
+
+    int ratioH = controlsBackground.getHeight() / 6;
+    int ratioW = controlsBackground.getWidth() / 6;
+    int space = (controlsBackground.getHeight() / 6);
+    int leftIndent = 20;
     
 
-    ratioLabel.setBounds(controlsBackground.getX() + 20, space  - 235, 40, 25);
-    ratio1Button.setBounds(controlsBackground.getX() + 20, space - 195, ratioW/4, ratioH);
-    ratio2Button.setBounds(ratio1Button.getRight(), space - 195, ratioW/4, ratioH);
-    ratio3Button.setBounds(ratio2Button.getRight(), space - 195, ratioW/4, ratioH);
-    ratio4Button.setBounds(ratio3Button.getRight(), space - 195, ratioW/4, ratioH);
+    inputSlider.setBounds(controlsBackground.getX() + leftIndent, controlsBackground.getY() + space , ratioW + 15, ratioH + 30);
 
-    tameButton.setBounds(controlsBackground.getX() + 40, space - 150, ratioW - 40, ratioH);
+    ratioLabel.setBounds(controlsBackground.getX() + leftIndent + 60, controlsBackground.getY() + (space * 3) + 5, ratioW / 4, (ratioH / 4) + 5);
+    ratio1Button.setBounds(controlsBackground.getX() + leftIndent + 10 , controlsBackground.getY() + (space * 3) - 20, ratioW/4, ratioH/4 + 5);
+    ratio2Button.setBounds(ratio1Button.getRight(), controlsBackground.getY() + (space * 3) -20, ratioW/4, (ratioH/4) + 5);
+    ratio3Button.setBounds(ratio2Button.getRight(), controlsBackground.getY() + (space * 3) -20, ratioW/4, (ratioH / 4) + 5);
+    ratio4Button.setBounds(ratio3Button.getRight(), controlsBackground.getY() + (space * 3) -20, ratioW/4, (ratioH / 4) + 5);
 
-    attackSlider.setBounds(controlsBackground.getX() + 20, space - 100, ratioW, ratioH);
+    
+    tameButton.setBounds(controlsBackground.getX() + leftIndent + 30, controlsBackground.getY() + (space * 4) - 40, ratioW - 40, ratioH /2);
 
-    releaseSlider.setBounds(controlsBackground.getX() + 20, space, ratioW, ratioH);
+    attackSlider.setBounds(controlsBackground.getX() - 15 , controlsBackground.getY() + (space * 5) - 30, ratioW - 20, ratioH);
 
-    dryWetSlider.setBounds(makeUpGainSlider.getRight(), controlsBackground.getY() + ((controlsBackground.getHeight() /2) - 30), controlsBackground.getWidth() / 5, controlsBackground.getHeight()/7);
+    releaseSlider.setBounds(attackSlider.getRight() - 15, controlsBackground.getY() + (space * 5) - 30, ratioW - 20, ratioH);
+
+    //Right side of Center Section
+    outputGainSlider.setBounds(makeUpGainSlider.getRight() + 50, controlsBackground.getY() + (controlsBackground.getHeight() / 6), (controlsBackground.getHeight()/5) + 20, (controlsBackground.getWidth() /6) + 20);
+    dryWetSlider.setBounds(makeUpGainSlider.getRight() + 72, controlsBackground.getY() + (controlsBackground.getHeight() /1.8), (controlsBackground.getHeight() / 5) - 25 , (controlsBackground.getWidth() / 6) - 25);
     dryLabel.setBounds(dryWetSlider.getX() , dryWetSlider.getBottom() - 10, 40, 20);
-    wetLabel.setBounds(dryWetSlider.getRight() - 40 , dryWetSlider.getBottom() - 10, 40, 20);
+    wetLabel.setBounds(dryWetSlider.getRight() - 30 , dryWetSlider.getBottom() - 10, 40, 20);
 
 
 }
 
-juce::String KcompAudioProcessorEditor::getActiveRatio()
+juce::Button& KcompAudioProcessorEditor::getActiveRatio()
 {
     //DBG("Called");
     if (ratio1Button.getToggleState())
     {
         DBG(ratioOneParam_ID);
-        return ratioOneParam_ID;
+        return ratio1Button;
     }
     else if (ratio2Button.getToggleState())
     {
         DBG(ratioTwoParam_ID);
-        return ratioTwoParam_ID;
+        return ratio2Button;
     }
     else if (ratio3Button.getToggleState())
     {
         DBG(ratioThreeParam_ID);
-        return ratioThreeParam_ID;
+        return ratio3Button;
     }
     else if (ratio4Button.getToggleState())
     {
         DBG(ratioFourParam_ID);
-        return ratioFourParam_ID;
+        return ratio4Button;
     }
     else
     {
         DBG("ERROR");
-        return "ERROR";
     }
 
-    
 }
 
 
@@ -329,6 +338,7 @@ void KcompAudioProcessorEditor::updateRatioState(juce::Button* activeButton, juc
 
     activeButton->setToggleState(true,juce::dontSendNotification);
     audioProcessor.setRatio(ratioID);
+    repaint();
 }
 
 
