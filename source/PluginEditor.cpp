@@ -178,31 +178,62 @@ KcompAudioProcessorEditor::~KcompAudioProcessorEditor()
 //==============================================================================
 void KcompAudioProcessorEditor::paint (juce::Graphics& g)
 {
+    //-----Bounds-----//
     
-    g.fillAll(mainBGColor);
 
-
+    //Outside Sliders
     auto inputSliderBG = inputSlider.getBounds().withTop(controlsBackground.getY());
     auto outputSliderBG = outputGainSlider.getBounds().withTop(controlsBackground.getY());
+    //Left side of Rectangle
+    auto compControlsBG = controlsBackground.withRight(thresholdSlider.getX());
+    //Right side of Rectangle
+    auto dryWetControlsBG = controlsBackground.withLeft(makeUpGainSlider.getRight());
+    //Middle of Rectangle
+    auto centerBG = controlsBackground.withLeft(compControlsBG.getRight()).withRight(dryWetControlsBG.getX());
+    auto leftCenterBG = centerBG.withRight(centerBG.getCentreX());
+    auto rightCenterBG = centerBG.withLeft(centerBG.getCentreX());
+    //Borders
+    auto topBorder = controlsBackground.withBottom(controlsBackground.getY() + 75).withLeft(inputSliderBG.getX()).withRight(outputSliderBG.getRight());
+    auto bottomBorder = controlsBackground.withTop(controlsBackground.getBottom() - 75).withLeft(inputSliderBG.getX()).withRight(outputSliderBG.getRight());
+
+
+    //-----Fills-----//
     
+
+    //Component Background
+    g.fillAll(mainBGColor.darker());
+
+    //Outside Sliders
     g.setGradientFill(juce::ColourGradient::horizontal<int>(controls1Color.brighter(), controls1Color, inputSliderBG));
     g.fillRect(inputSliderBG);
     g.setGradientFill(juce::ColourGradient::horizontal<int>(controls1Color, controls1Color.brighter(), outputSliderBG));
     g.fillRect(outputSliderBG);
 
+    //Rectangle between the Sliders
     g.setColour(controlsBGColor);
     g.fillRect(controlsBackground);
-    
-    auto compControlsBG = controlsBackground.withRight(thresholdSlider.getX());
 
+    //Left side of Rectangle
     g.setGradientFill(juce::ColourGradient::horizontal<int>(controls1Color, controls1Color.brighter(), compControlsBG));
     g.fillRect(compControlsBG);
-    
-    auto dryWetControlsBG = controlsBackground.withLeft(makeUpGainSlider.getRight());
 
+    //Right side of Rectangle
     g.setGradientFill(juce::ColourGradient::horizontal<int>(controls1Color.brighter(), controls1Color, dryWetControlsBG));
     g.fillRect(dryWetControlsBG);
     
+    //Middle of Rectangle
+    g.setGradientFill(juce::ColourGradient::horizontal<int>(controlsBGColor.darker(), controlsBGColor.brighter(), leftCenterBG));
+    g.fillRect(leftCenterBG);
+    g.setGradientFill(juce::ColourGradient::horizontal<int>(controlsBGColor.brighter(), controlsBGColor.darker(), rightCenterBG));
+    g.fillRect(rightCenterBG);
+
+    //Borders
+    g.setGradientFill(juce::ColourGradient::vertical<int>(controls1Color.darker().withAlpha(0.5f), controls1Color.brighter().withAlpha(0.0f), topBorder));
+    g.fillRect(topBorder);
+    g.setGradientFill(juce::ColourGradient::vertical<int>(controls1Color.brighter().withAlpha(0.0f), controls1Color.darker().withAlpha(0.5f), bottomBorder));
+    g.fillRect(bottomBorder);
+
+
 }
 
 void KcompAudioProcessorEditor::resized()
