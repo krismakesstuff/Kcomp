@@ -230,23 +230,51 @@ public:
     void paint (juce::Graphics& g) override
     {
         juce::Graphics::ScopedSaveState saved(g);
-        auto area = getLocalBounds().toFloat();
-
-        const auto infinity = -100.0f;
-        const auto rmsDB = juce::Decibels::gainToDecibels(source->getRMSLevel(0), infinity);
-        const auto peakDB = juce::Decibels::gainToDecibels(source->getMaxLevel(0), infinity);
-
-        levelMeterRect.setBounds(ceilf(area.getX()) + 1.0f, ceilf(area.getY()) + 1.0f,
-                floorf(area.getRight()) - (ceilf(area.getX() + 2.0f)),
-                floorf(area.getBottom()) - (ceilf(area.getY()) + 2.0f));
-
-
+        
         g.setColour(meterBGColor);
         g.fillRect(metersBackground);
 
-        g.setColour(meterColor);
-        g.fillRect(levelMeterRect.withTop(levelMeterRect.getY() + rmsDB * levelMeterRect.getHeight() / infinity));
         
+        juce::Rectangle<float> area;
+        const auto infinity = -100.0f;
+        float rmsDB;
+        float peakDB;
+
+        
+
+        for (auto channel = 0; channel < source->meterData.size(); ++channel)
+        {
+
+            g.setColour(meterColor);
+            area = getLocalBounds().toFloat();
+
+            //Divides the bounds by number of Channels to space them, then sets its postion
+            area.setWidth(((area.getWidth() / source->meterData.size()) * (channel + 1)));
+            
+
+            levelMeters.add(new juce::Rectangle<float>(ceilf(area.getX()) + 1.0f, ceilf(area.getY()) + 1.0f,
+                                                        floorf(area.getRight()) - (ceilf(area.getX() + 2.0f)),
+                                                        floorf(area.getBottom()) - (ceilf(area.getY()) + 2.0f)));
+
+            //levelMeters.add(new juce::Rectangle<float>(area));
+
+            rmsDB = juce::Decibels::gainToDecibels(source->getRMSLevel(channel), infinity);
+            peakDB = juce::Decibels::gainToDecibels(source->getMaxLevel(channel), infinity);    
+
+            auto meter = levelMeters[channel];
+
+            g.fillRect(meter->withTop(meter->getY() + rmsDB * meter->getHeight() / infinity));
+
+            //if (meter != levelMeters.getLast())
+            //{
+            //    g.setColour(meterBGColor);
+            //    //g.drawVerticalLine(meter->getRight(), metersBackground.getY(), metersBackground.getHeight());
+            //    g.fillRect(meter->getRight(), metersBackground.getY(), 10.0f, metersBackground.getHeight());
+            //}
+
+        }
+        g.setColour(meterBGColor);
+        g.fillRect(metersBackground.getCentreX() - 1.5f, metersBackground.getY(), 3.0f, metersBackground.getHeight());
 
     }
 
@@ -254,14 +282,6 @@ public:
     {
         auto area = getLocalBounds().toFloat();
         metersBackground.setBounds(area.getX(), area.getY(), area.getWidth(), area.getHeight());
-
-        levelMeterRect.setBounds(area.getX(), area.getY(), area.getWidth(), area.getHeight());
-
-
-       /* levelMeterRect.setTop(metersBackground.getBottom() - meterHeight);
-        levelMeterRect.setBottom(metersBackground.getBottom());
-        levelMeterRect.setLeft(metersBackground.getX());
-        levelMeterRect.setRight(metersBackground.getRight());*/
 
         
     }
@@ -282,12 +302,12 @@ public:
         meterColor = newColour; 
     }
 
-    void setLevelMeter(float rms)
+   /* void setLevelMeter(float rms)
     {
         float newHeight = juce::jmap<float>(rms, 0, metersBackground.getHeight());
         meterHeight = newHeight;
         repaint();
-    }
+    }*/
 
     void timerCallback() override
     {
@@ -299,7 +319,7 @@ public:
                 source->resetUpdateMeter();
                 
             }
-            setLevelMeter(source->getRMSLevel(0));
+            //setLevelMeter(source->getRMSLevel(0));
             repaint();
         }
     }
@@ -311,7 +331,12 @@ private:
     
 
     juce::Rectangle<float> metersBackground;
-    juce::Rectangle<float> levelMeterRect;
+
+    juce::OwnedArray<juce::Rectangle<float>> levelMeters;
+
+    /*juce::Rectangle<float> levelMeterRectL;
+    juce::Rectangle<float> levelMeterRectR;*/
+
     bool bgNeedsRepaint = true;
     float meterHeight{};
 
