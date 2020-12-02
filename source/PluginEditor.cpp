@@ -84,6 +84,7 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
 
     //Threshold
     addAndMakeVisible(thresholdSlider);
+    thresholdSlider.setLookAndFeel(&kSlider);
     thresholdSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
     thresholdSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 50, 20);
     thresholdSlider.setColour(juce::Slider::ColourIds::textBoxOutlineColourId, juce::Colours::black);
@@ -173,7 +174,14 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
 
 KcompAudioProcessorEditor::~KcompAudioProcessorEditor()
 {
+    
     setLookAndFeel(nullptr);
+
+    for (auto child = 0; child < getNumChildComponents(); ++child)
+    {
+        getChildComponent(child)->setLookAndFeel(nullptr);
+    }
+
     //stopTimer();
 }
 
@@ -182,11 +190,6 @@ void KcompAudioProcessorEditor::paint (juce::Graphics& g)
 {
     //-----Bounds-----//
     
-
-    //Outside Sliders
-    /*auto inputSliderBG = inputSlider.getBounds().withTop(controlsBackground.getY());
-    auto outputSliderBG = outputGainSlider.getBounds().withTop(controlsBackground.getY());*/
-
     //Left side of Rectangle
     auto compControlsBG = controlsBackground.withRight(thresholdSlider.getX());
 
@@ -208,12 +211,6 @@ void KcompAudioProcessorEditor::paint (juce::Graphics& g)
 
     //Component Background
     g.fillAll(mainBGColor.darker());
-
-    //Outside Sliders
-    /*g.setGradientFill(juce::ColourGradient::horizontal<int>(controls1Color.brighter(), controls1Color, inputSliderBG));
-    g.fillRect(inputSliderBG);
-    g.setGradientFill(juce::ColourGradient::horizontal<int>(controls1Color, controls1Color.brighter(), outputSliderBG));
-    g.fillRect(outputSliderBG);*/
 
     //Kcomp Rectangle
     g.setColour(controlsBGColor);
@@ -261,11 +258,9 @@ void KcompAudioProcessorEditor::resized()
     controlsBackground.setBottom(getBottom() - 45);
 
 
-    thresholdSlider.setBounds((controlsBackground.getWidth() / 4.5) + 30, controlsBackground.getY() + 50, controlsBackground.getWidth() / 7, controlsBackground.getHeight() - 55);
+    thresholdSlider.setBounds((controlsBackground.getWidth() / 4.5) + 30, controlsBackground.getY() + 50, controlsBackground.getWidth() / 7, controlsBackground.getHeight() - 70);
     levelMeter.setBounds(thresholdSlider.getRight() + 10, controlsBackground.getY() + 50, controlsBackground.getWidth()/5, controlsBackground.getHeight() - 55);
     makeUpGainSlider.setBounds(levelMeter.getRight() + 10, controlsBackground.getY() + 50, controlsBackground.getWidth() / 7, controlsBackground.getHeight() - 55);
-
-    
 
     //preRMSLabel.setBounds(inputSlider.getRight() + 10, controlsBackground.getBottom() - 20, 50, 20);
     //postRMSLabel.setBounds(preRMSLabel.getRight() + 5, controlsBackground.getBottom() - 20, 50, 20);

@@ -11,6 +11,7 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 #include "LevelMeter.h"
+#include "KSlider.h"
 
 //==============================================================================
 /**
@@ -69,6 +70,7 @@ private:
     std::unique_ptr<ButtonAttachment> ratio3ButtonAttachment;
     std::unique_ptr<ButtonAttachment> ratio4ButtonAttachment;
 
+    //KSlider thresholdSlider;
     juce::Slider thresholdSlider;
     juce::Label thresholdLabel{ juce::String(), "Threshold" };
     std::unique_ptr <SliderAttachment> thresholdSliderAttachment;
@@ -124,6 +126,7 @@ private:
         
     };
     KCompLookAndFeel kCompLAF;
+    KSlider kSlider;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (KcompAudioProcessorEditor)
 };

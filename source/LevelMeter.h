@@ -446,8 +446,6 @@ private:
 
     juce::OwnedArray<juce::Rectangle<float>> levelMeters;
 
-    /*juce::Rectangle<float> levelMeterRectL;
-    juce::Rectangle<float> levelMeterRectR;*/
 
     bool bgNeedsRepaint = true;
     float meterHeight{};

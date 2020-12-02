@@ -12,6 +12,7 @@
             file="Source/PluginEditor.cpp"/>
       <FILE id="BzDEx6" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
     </GROUP>
+    <FILE id="l2fX72" name="KSlider.h" compile="0" resource="0" file="Source/KSlider.h"/>
     <FILE id="wVjLiP" name="LevelMeter.h" compile="0" resource="0" file="Source/LevelMeter.h"/>
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>
