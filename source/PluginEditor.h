@@ -105,6 +105,7 @@ private:
     juce::Colour controls2Color{ juce::Colours::darkgreen };
 
     LevelMeter levelMeter;
+    
 
 
     juce::AudioProcessorValueTreeState& valueTreeState;

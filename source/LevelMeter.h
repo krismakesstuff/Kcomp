@@ -15,8 +15,11 @@
 //==============================================================================
 /*
 */
+const float infinity = -100.0f;
+
 class LevelMeter  : public juce::Component,
-                    public juce::Timer
+                    public juce::Timer/*,
+                    public juce::MouseListener*/
 {
 public:
     class LevelMeterGetter
@@ -242,6 +245,14 @@ public:
             return meterData.at(size_t(channel)).maxOverall;
         }
 
+        void clearMaxOveralls()
+        {
+            for (LevelMeterData& channel : meterData)
+            {
+                channel.maxOverall = infinity;
+            }
+        }
+
         bool getClipFlag(const int channel) const
         {
             return meterData.at(size_t(channel)).clip;
@@ -276,6 +287,25 @@ public:
             //levelMeters.add(new juce::Rectangle<float>);
         }
 
+        //PeakLabels
+        addAndMakeVisible(peakLLabel);
+        peakLLabel.setText("0.00", juce::dontSendNotification);
+        peakLLabel.setFont({ 11.0f, juce::Font::FontStyleFlags::plain });
+        peakLLabel.setJustificationType(juce::Justification::centred);
+        peakLLabel.setEditable(false);
+        peakLLabel.setColour(juce::Label::ColourIds::textColourId, juce::Colours::black);
+        peakLLabel.setColour(juce::Label::ColourIds::backgroundColourId, juce::Colours::darkgrey);
+        peakLLabel.setTooltip("Double-Click anywhere on the meter to reset.");
+
+        addAndMakeVisible(peakRLabel);
+        peakRLabel.setText("0.00", juce::dontSendNotification);
+        peakRLabel.setFont({ 11.0f, juce::Font::FontStyleFlags::plain });
+        peakRLabel.setJustificationType(juce::Justification::centred);
+        peakRLabel.setEditable(false);
+        peakRLabel.setColour(juce::Label::ColourIds::textColourId, juce::Colours::black);
+        peakRLabel.setColour(juce::Label::ColourIds::backgroundColourId, juce::Colours::darkgrey);
+        peakRLabel.setTooltip("Double-Click anywhere on the meter to reset.");
+
         startTimerHz(refreshRate);
 
     }
@@ -294,28 +324,21 @@ public:
 
 
         juce::Rectangle<float> area = getLocalBounds().toFloat();
-        const auto infinity = -100.0f;
+        
         float rmsDB;
         float peakDB;
 
 
         for (auto channel = 0; channel < source->meterData.size() ; ++channel)
         {
-            g.setColour(meterColor);
-            if (channel > 0)
-            {
-                g.setColour(meterColor.brighter());
-            }
-            
-
+            g.setColour(meterColor.brighter());
             juce::Rectangle<float> channelRect = area;
 
-            auto meter = levelMeters[channel];
-            
             //Divides the bounds by number of Channels to space them, then sets its postion
+            auto meter = levelMeters[channel];
             meter->setBounds(channelRect.getX() + 2.0f, channelRect.getY(),
                 (area.getWidth() / (levelMeters.size()-1)) * (channel + 1) - 4.0f,
-                channelRect.getHeight());
+                channelRect.getHeight() - peakLabelOffset);
 
             //sets the left of meters 
             auto prevMeterIn = levelMeters.indexOf(levelMeters[channel - 1]);
@@ -325,16 +348,26 @@ public:
                 meter->setLeft(prevMeter->getRight() + 4);
             }
 
+            //draws Meter
             rmsDB = juce::Decibels::gainToDecibels(source->getRMSLevel(channel), infinity);
             peakDB = juce::Decibels::gainToDecibels(source->getMaxLevel(channel), infinity);
-
             g.fillRect(meter->withTop(meter->getY() + rmsDB * meter->getHeight() / infinity));
-            source->setMaxHoldMs(500);
+
+            //draws Peak bar
+            source->setMaxHoldMs(100);
             if (peakDB > -80)
             {
                 g.drawHorizontalLine(juce::jmax<float>(peakDB * channelRect.getHeight() / infinity, 0.0f), meter->getX(), meter->getRight());
                 source->decay();
             }
+
+            //draws Clip Bar
+            if (source->getClipFlag(channel))
+            {
+                g.setColour(juce::Colours::red.darker());
+                g.fillRect(meter->getX(), channelRect.getY(), meter->getWidth(), 5.0f);
+            }
+            
             
         }
 
@@ -344,8 +377,10 @@ public:
     void resized() override
     {
         auto area = getLocalBounds().toFloat();
-        metersBackground.setBounds(area.getX(), area.getY(), area.getWidth(), area.getHeight());
+        metersBackground.setBounds(area.getX(), area.getY(), area.getWidth(), area.getHeight() - peakLabelOffset);
 
+        peakLLabel.setBounds(metersBackground.getX() + 20, metersBackground.getBottom(), 40, 15);
+        peakRLabel.setBounds((metersBackground.getWidth()/2) + 20, metersBackground.getBottom(), 40, 15);
     }
 
     void setMeterSource(LevelMeterGetter* src)
@@ -370,6 +405,23 @@ public:
     {
         if ((source && source->shouldUpdateMeter()) || bgNeedsRepaint)
         {
+            
+            if (source->getClipFlag(0))
+            {
+                peakLLabel.setText("CLIP", juce::dontSendNotification);
+            }
+            if (source->getClipFlag(1))
+            {
+                peakRLabel.setText("CLIP", juce::dontSendNotification);
+            }
+            else
+            {
+                auto leftPeak = juce::Decibels::gainToDecibels(juce::jmin<float>(source->getMaxOverallLevel(0), 1.0f));
+                auto rightPeak = juce::Decibels::gainToDecibels(juce::jmin<float>(source->getMaxOverallLevel(1), 1.0f));
+                peakLLabel.setText(juce::String(leftPeak).dropLastCharacters(3) + " dB", juce::dontSendNotification);
+                peakRLabel.setText(juce::String(rightPeak).dropLastCharacters(3) + " dB", juce::dontSendNotification);
+            }
+
             if (source)
             {
                 source->resetUpdateMeter();
@@ -378,6 +430,12 @@ public:
         }
     }
     
+    void mouseDoubleClick(const juce::MouseEvent& event) override
+    {
+        source->clearAllClipFlags();
+        source->clearMaxOveralls();
+    }
+
 
 private:
 
@@ -399,7 +457,9 @@ private:
 
     int refreshRate = 60;
     
-
+    int peakLabelOffset = 25;
+    juce::Label peakLLabel;
+    juce::Label peakRLabel;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LevelMeter)
 };

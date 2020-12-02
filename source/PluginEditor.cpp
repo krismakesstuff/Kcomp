@@ -149,6 +149,8 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     addAndMakeVisible(levelMeter);
     levelMeter.setMeterSource(audioProcessor.getLevelMeterGetter());
     
+    
+
     //Output Gain 
     addAndMakeVisible(outputGainSlider);
     outputGainSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
@@ -260,9 +262,10 @@ void KcompAudioProcessorEditor::resized()
 
 
     thresholdSlider.setBounds((controlsBackground.getWidth() / 4.5) + 30, controlsBackground.getY() + 50, controlsBackground.getWidth() / 7, controlsBackground.getHeight() - 55);
-    levelMeter.setBounds(thresholdSlider.getRight() + 10, controlsBackground.getY() + 50, controlsBackground.getWidth()/5, controlsBackground.getHeight() - 75);
+    levelMeter.setBounds(thresholdSlider.getRight() + 10, controlsBackground.getY() + 50, controlsBackground.getWidth()/5, controlsBackground.getHeight() - 55);
     makeUpGainSlider.setBounds(levelMeter.getRight() + 10, controlsBackground.getY() + 50, controlsBackground.getWidth() / 7, controlsBackground.getHeight() - 55);
 
+    
 
     //preRMSLabel.setBounds(inputSlider.getRight() + 10, controlsBackground.getBottom() - 20, 50, 20);
     //postRMSLabel.setBounds(preRMSLabel.getRight() + 5, controlsBackground.getBottom() - 20, 50, 20);
