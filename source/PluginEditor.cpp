@@ -11,7 +11,7 @@
 
 //==============================================================================
 KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juce::AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor(&p), audioProcessor(p), valueTreeState(vts)
+    : AudioProcessorEditor(&p), audioProcessor(p), valueTreeState(vts), levelMeter(p.getTotalNumInputChannels())
 {
     setLookAndFeel(&kCompLAF);
 

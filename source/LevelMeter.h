@@ -216,8 +216,15 @@ public:
 
 
 public:
-    LevelMeter()
+    LevelMeter(int channels)
     {
+        levelMeters.ensureStorageAllocated(channels);
+        for (auto i = 0; i <= channels; i++)
+        {
+            levelMeters.set(i, new juce::Rectangle<float>, true);
+            //levelMeters.add(new juce::Rectangle<float>);
+        }
+
         startTimerHz(refreshRate);
 
     }
@@ -227,55 +234,58 @@ public:
         stopTimer();
     }
 
-    void paint (juce::Graphics& g) override
+    void paint(juce::Graphics& g) override
     {
         juce::Graphics::ScopedSaveState saved(g);
-        
+
         g.setColour(meterBGColor);
         g.fillRect(metersBackground);
 
-        
-        juce::Rectangle<float> area;
+
+        juce::Rectangle<float> area = getLocalBounds().toFloat();
         const auto infinity = -100.0f;
         float rmsDB;
         float peakDB;
 
-        
 
-        for (auto channel = 0; channel < source->meterData.size(); ++channel)
+        for (auto channel = 0; channel < source->meterData.size() ; ++channel)
         {
-
             g.setColour(meterColor);
-            area = getLocalBounds().toFloat();
-
-            //Divides the bounds by number of Channels to space them, then sets its postion
-            area.setWidth(((area.getWidth() / source->meterData.size()) * (channel + 1)));
+            if (channel > 0)
+            {
+                g.setColour(meterColor.brighter());
+            }
             
 
-            levelMeters.add(new juce::Rectangle<float>(ceilf(area.getX()) + 1.0f, ceilf(area.getY()) + 1.0f,
-                                                        floorf(area.getRight()) - (ceilf(area.getX() + 2.0f)),
-                                                        floorf(area.getBottom()) - (ceilf(area.getY()) + 2.0f)));
-
-            //levelMeters.add(new juce::Rectangle<float>(area));
-
-            rmsDB = juce::Decibels::gainToDecibels(source->getRMSLevel(channel), infinity);
-            peakDB = juce::Decibels::gainToDecibels(source->getMaxLevel(channel), infinity);    
+            juce::Rectangle<float> channelRect = area;
 
             auto meter = levelMeters[channel];
+            
+            //Divides the bounds by number of Channels to space them, then sets its postion
+            meter->setBounds(channelRect.getX() + 2.0f, channelRect.getY(),
+                (area.getWidth() / (levelMeters.size()-1)) * (channel + 1) - 4.0f,
+                channelRect.getHeight());
+
+            auto prevMeterIn = levelMeters.indexOf(levelMeters[channel - 1]);
+            if (prevMeterIn != -1)
+            {
+                auto prevMeter = levelMeters.getUnchecked(prevMeterIn);
+                meter->setLeft(prevMeter->getRight() + 4);
+            }
+
+            rmsDB = juce::Decibels::gainToDecibels(source->getRMSLevel(channel), infinity);
+            peakDB = juce::Decibels::gainToDecibels(source->getMaxLevel(channel), infinity);
 
             g.fillRect(meter->withTop(meter->getY() + rmsDB * meter->getHeight() / infinity));
 
-            //if (meter != levelMeters.getLast())
-            //{
-            //    g.setColour(meterBGColor);
-            //    //g.drawVerticalLine(meter->getRight(), metersBackground.getY(), metersBackground.getHeight());
-            //    g.fillRect(meter->getRight(), metersBackground.getY(), 10.0f, metersBackground.getHeight());
-            //}
-
+            
         }
-        g.setColour(meterBGColor);
-        g.fillRect(metersBackground.getCentreX() - 1.5f, metersBackground.getY(), 3.0f, metersBackground.getHeight());
 
+        /*if (levelMeters.size() > 1)
+        {
+            g.setColour(meterBGColor);
+            g.fillRect(metersBackground.getCentreX() - 1.5f, metersBackground.getY(), 3.0f, metersBackground.getHeight());
+        }*/
     }
 
     void resized() override
