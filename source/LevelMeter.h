@@ -174,6 +174,24 @@ public:
             updateMeter = true;
         }
 
+        void decay()
+        {
+            juce::int64 time = juce::Time::currentTimeMillis();
+            if (time - lastMeasurement < 100)
+            {
+                return;
+            }
+
+            lastMeasurement = time;
+            for (size_t channel = 0; channel < meterData.size(); ++channel)
+            {
+                meterData[channel].setLevels(lastMeasurement, 0.0f, 0.0f, holdMS);
+                meterData[channel].reduction = 1.0f;
+            }
+
+            updateMeter = true;
+        }
+
         bool shouldUpdateMeter() const
         {
             return updateMeter;
@@ -187,6 +205,21 @@ public:
         void setSuspended(const bool shouldBeSus)
         {
             suspended = shouldBeSus;
+        }
+
+        void setMaxHoldMs(const juce::int64 millis)
+        {
+            holdMS = millis;
+        }
+
+
+
+        void setReductionLevel(const float newReduction)
+        {
+            for (auto& channel : meterData)
+            {
+                channel.reduction = newReduction;
+            }
         }
 
         float getReductionLevel(const int channel) const
@@ -204,11 +237,29 @@ public:
             return meterData.at(size_t(channel)).max;
         }
 
+        float getMaxOverallLevel(const int channel)
+        {
+            return meterData.at(size_t(channel)).maxOverall;
+        }
+
+        bool getClipFlag(const int channel) const
+        {
+            return meterData.at(size_t(channel)).clip;
+        }
+
+        void clearAllClipFlags()
+        {
+            for (LevelMeterData& l : meterData)
+            {
+                l.clip = false;
+            }
+        }
+
         bool updateMeter{ true };
         bool suspended{ false };
         std::vector<LevelMeterData> meterData;
         std::atomic<juce::int64> lastMeasurement;
-        juce::int64 holdMS{25};
+        juce::int64 holdMS;
 
         juce::WeakReference<LevelMeterGetter>::Master masterReference;
         friend class juce::WeakReference<LevelMeterGetter>;
@@ -266,6 +317,7 @@ public:
                 (area.getWidth() / (levelMeters.size()-1)) * (channel + 1) - 4.0f,
                 channelRect.getHeight());
 
+            //sets the left of meters 
             auto prevMeterIn = levelMeters.indexOf(levelMeters[channel - 1]);
             if (prevMeterIn != -1)
             {
@@ -277,15 +329,16 @@ public:
             peakDB = juce::Decibels::gainToDecibels(source->getMaxLevel(channel), infinity);
 
             g.fillRect(meter->withTop(meter->getY() + rmsDB * meter->getHeight() / infinity));
-
+            source->setMaxHoldMs(500);
+            if (peakDB > -80)
+            {
+                g.drawHorizontalLine(juce::jmax<float>(peakDB * channelRect.getHeight() / infinity, 0.0f), meter->getX(), meter->getRight());
+                source->decay();
+            }
             
         }
 
-        /*if (levelMeters.size() > 1)
-        {
-            g.setColour(meterBGColor);
-            g.fillRect(metersBackground.getCentreX() - 1.5f, metersBackground.getY(), 3.0f, metersBackground.getHeight());
-        }*/
+        
     }
 
     void resized() override
@@ -293,7 +346,6 @@ public:
         auto area = getLocalBounds().toFloat();
         metersBackground.setBounds(area.getX(), area.getY(), area.getWidth(), area.getHeight());
 
-        
     }
 
     void setMeterSource(LevelMeterGetter* src)
@@ -312,24 +364,16 @@ public:
         meterColor = newColour; 
     }
 
-   /* void setLevelMeter(float rms)
-    {
-        float newHeight = juce::jmap<float>(rms, 0, metersBackground.getHeight());
-        meterHeight = newHeight;
-        repaint();
-    }*/
+   
 
     void timerCallback() override
     {
-
         if ((source && source->shouldUpdateMeter()) || bgNeedsRepaint)
         {
             if (source)
             {
                 source->resetUpdateMeter();
-                
             }
-            //setLevelMeter(source->getRMSLevel(0));
             repaint();
         }
     }
