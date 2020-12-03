@@ -11,7 +11,7 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 #include "LevelMeter.h"
-#include "KSlider.h"
+#include "KCompLAF.h"
 
 //==============================================================================
 /**
@@ -49,8 +49,14 @@ private:
         ratioButtonGroup = 42
     };
 
-    juce::Label kCompTitle{juce::String(), "KCOMP"};
+    //juce::Label kCompTitle{juce::String(), "KCOMP"};
+    juce::Rectangle<int> controlsBackground;
 
+    juce::Image titleImage;
+    juce::Rectangle<float> titleRect;
+
+    juce::Image mainBGImage;
+    juce::Rectangle<float> mainBGRect;
     
     juce::Slider inputSlider; 
     juce::Label inputLabel{juce::String(), "Input"};
@@ -98,13 +104,9 @@ private:
 
     //juce::Label preRMSLabel{juce::String() ,"666"};
     //juce::Label postRMSLabel{juce::String(), "777"};
-    juce::Colour mainBGColor{ juce::Colours::black };
+    
 
-    juce::Rectangle<int> controlsBackground;
-
-    juce::Colour controlsBGColor{ juce::Colours::darkcyan };
-    juce::Colour controls1Color{ juce::Colours::darkgrey };
-    juce::Colour controls2Color{ juce::Colours::darkgreen };
+    
 
     LevelMeter levelMeter;
     
@@ -113,20 +115,8 @@ private:
     juce::AudioProcessorValueTreeState& valueTreeState;
     KcompAudioProcessor& audioProcessor;
 
-    
 
-    struct KCompLookAndFeel : public juce::LookAndFeel_V4
-    {
-        /*void drawLinearSlider(juce::Graphics& g, int x, int y, int width, int height, float sliderPos,
-                                float minSliderPos, float maxSliderPos, const juce::Slider::SliderStyle,
-                                juce::Slider& slider) override
-        {
-
-        }*/
-        
-    };
-    KCompLookAndFeel kCompLAF;
-    KSlider kSlider;
+    KCompLAF kCompLaf;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (KcompAudioProcessorEditor)
 };
