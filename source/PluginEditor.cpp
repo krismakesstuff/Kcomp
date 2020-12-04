@@ -35,20 +35,28 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     inputLabel.attachToComponent(&inputSlider, false);
     inputLabel.setJustificationType(juce::Justification::centred);
 
+    //Threshold
+    addAndMakeVisible(thresholdSlider);
+    thresholdSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
+    thresholdSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::NoTextBox, false, 0, 0);
+    thresholdSliderAttachment.reset(new SliderAttachment(valueTreeState, thresholdParam_ID, thresholdSlider));
+    thresholdSlider.onValueChange = [this] { audioProcessor.setThreshold(thresholdSlider.getValue()); };
+
+    addAndMakeVisible(thresholdLabel);
+    thresholdLabel.attachToComponent(&thresholdSlider, false);
+    thresholdLabel.setJustificationType(juce::Justification::centred);
 
     //Make-Up Gain
     addAndMakeVisible(makeUpGainSlider);
     makeUpGainSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
-    makeUpGainSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 50, 20);
-    makeUpGainSlider.setColour(juce::Slider::ColourIds::textBoxOutlineColourId, juce::Colours::darkgrey);
-    makeUpGainSlider.setColour(juce::Slider::ColourIds::textBoxBackgroundColourId, juce::Colours::black);
+    makeUpGainSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::NoTextBox, false, 0, 0);
     makeUpGainAttachment.reset(new SliderAttachment(valueTreeState, makeUpGainParam_ID, makeUpGainSlider));
     makeUpGainSlider.onValueChange = [this] { audioProcessor.setMakeUpGain(makeUpGainSlider.getValue()); };
 
     addAndMakeVisible(makeUpGainLabel);
     makeUpGainLabel.attachToComponent(&makeUpGainSlider, false);
     makeUpGainLabel.setJustificationType(juce::Justification::centred);
-    makeUpGainLabel.setFont({ 15.0f, juce::Font::FontStyleFlags::plain });
+    //makeUpGainLabel.setFont({ 15.0f, juce::Font::FontStyleFlags::plain });
 
     //Ratio Buttons
     addAndMakeVisible(ratio1Button);
@@ -87,17 +95,7 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     ratioLabel.setJustificationType(juce::Justification::centred);
     ratioLabel.setFont({ 12.0f, juce::Font::FontStyleFlags::plain });
 
-    //Threshold
-    addAndMakeVisible(thresholdSlider);
-    thresholdSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
-    thresholdSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 50, 20);
-    thresholdSliderAttachment.reset(new SliderAttachment(valueTreeState, thresholdParam_ID, thresholdSlider));
-    thresholdSlider.onValueChange = [this] { audioProcessor.setThreshold(thresholdSlider.getValue()); };
-
-    addAndMakeVisible(thresholdLabel);
-    thresholdLabel.attachToComponent(&thresholdSlider, false);
-    thresholdLabel.setJustificationType(juce::Justification::centred);
-
+    
     //Attack
     addAndMakeVisible(attackSlider);
     attackSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
@@ -231,13 +229,13 @@ void KcompAudioProcessorEditor::paint (juce::Graphics& g)
     
 
     //Left side of Rectangle
-    juce::ColourGradient leftGrade = juce::ColourGradient::horizontal<int>(kCompLaf.controls1Color.brighter(), kCompLaf.controls1Color, compControlsBG);
+    juce::ColourGradient leftGrade = juce::ColourGradient::horizontal<int>(kCompLaf.controls1Color.darker(), kCompLaf.controls1Color, compControlsBG);
     //leftGrade.addColour(0.5f, kCompLaf.spectrumColor);
     g.setGradientFill(leftGrade);
     g.fillRoundedRectangle(compControlsBG.toFloat(), 6.5f);
 
     //Right side of Rectangle
-    juce::ColourGradient rightGrade = juce::ColourGradient::horizontal<int>(kCompLaf.controls1Color, kCompLaf.controls1Color.brighter(), dryWetControlsBG);
+    juce::ColourGradient rightGrade = juce::ColourGradient::horizontal<int>(kCompLaf.controls1Color, kCompLaf.controls1Color.darker(), dryWetControlsBG);
     g.setGradientFill(rightGrade);
     g.fillRoundedRectangle(dryWetControlsBG.toFloat(), 6.5f);
     
@@ -281,9 +279,9 @@ void KcompAudioProcessorEditor::resized()
     controlsBackground.setBottom(getBottom() - 45);
 
     //Center Section
-    thresholdSlider.setBounds((controlsBackground.getWidth() / 4.5) + 30, controlsBackground.getY() + 50, controlsBackground.getWidth() / 7, controlsBackground.getHeight() - 70);
+    thresholdSlider.setBounds((controlsBackground.getWidth() / 4.5) + 30, controlsBackground.getY() + 40, controlsBackground.getWidth() / 7, controlsBackground.getHeight() - 57);
     levelMeter.setBounds(thresholdSlider.getRight() + 10, controlsBackground.getY() + 50, controlsBackground.getWidth()/5, controlsBackground.getHeight() - 55);
-    makeUpGainSlider.setBounds(levelMeter.getRight() + 10, controlsBackground.getY() + 50, controlsBackground.getWidth() / 7, controlsBackground.getHeight() - 55);
+    makeUpGainSlider.setBounds(levelMeter.getRight() + 10, controlsBackground.getY() + 40, controlsBackground.getWidth() / 7, controlsBackground.getHeight() - 57);
 
     //preRMSLabel.setBounds(inputSlider.getRight() + 10, controlsBackground.getBottom() - 20, 50, 20);
     //postRMSLabel.setBounds(preRMSLabel.getRight() + 5, controlsBackground.getBottom() - 20, 50, 20);

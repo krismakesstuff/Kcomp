@@ -19,7 +19,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
     juce::NormalisableRange <float> makeUpGainRange = { juce::Decibels::decibelsToGain<float>(0.0f), juce::Decibels::decibelsToGain<float>(15.0f), 0.0001f };
     float defMakeUpGain = 1.0f;
 
-    juce::NormalisableRange<float> thresholdRange = { juce::Decibels::decibelsToGain<float>(-95.0f),juce::Decibels::decibelsToGain<float>(0.0f), 0.000001f };
+    juce::NormalisableRange<float> thresholdRange = { juce::Decibels::decibelsToGain<float>(-90.0f),juce::Decibels::decibelsToGain<float>(0.0f), 0.000001f };
     thresholdRange.setSkewForCentre(juce::Decibels::decibelsToGain<float>(-45.0f));
     float defThreshold = 1.0f;
 
@@ -254,13 +254,6 @@ void KcompAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
             buffer.clear(i, 0, buffer.getNumSamples());
     }
     
-    /*for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer (channel);
-
-        
-    }*/
-
     juce::dsp::AudioBlock<float> block(buffer);
     dryWet.pushDrySamples(block);
     juce::dsp::ProcessContextReplacing<float> context(block);
@@ -275,8 +268,6 @@ void KcompAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
 
     kComp.process(context);
     
-
-    //process OutputGain
 
    /* postRMSL = buffer.getRMSLevel(0, buffer.getSample(0, 0), buffer.getNumSamples());
     postRMSR = buffer.getRMSLevel(1, buffer.getSample(1, 0), buffer.getNumSamples());*/
