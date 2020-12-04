@@ -28,10 +28,15 @@ public:
     juce::Colour controls2Color{ juce::Colours::darkgreen };
 
     juce::Colour spectrumColor{ juce::Colours::red.withAlpha(0.7f) };
+    juce::Colour accent1Color{ juce::Colours::yellow.brighter(0.2f) };
+    juce::Colour accent2Color{ juce::Colours::red.brighter(0.2f) };
 
     juce::Font mainFont{ "Unispace", 14.0f, juce::Font::FontStyleFlags::bold };
     juce::Font smallFont{ "Unispace", 11.5f, juce::Font::FontStyleFlags::plain };
 
+
+    //FIX ME
+    //Make this the Default Look and Feel in Editor Constructor
 
     KCompLAF()
     {
@@ -62,8 +67,6 @@ public:
         auto color = findColour(juce::TextButton::ColourIds::buttonColourId);
         auto onColor = findColour(juce::TextButton::ColourIds::buttonOnColourId);
         
-        
-
         if (isButtonDown || isHighlighted)
         {
             color = isHighlighted ? color.contrasting(0.1f) : color.contrasting(0.5f);
@@ -105,9 +108,62 @@ public:
             g.drawRoundedRectangle(area.toFloat(), cornerSize, 1.0f);
         }
 
-        
     }
     
+
+    void drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height, float sliderPos, float rotaryStartAngle, float rotaryEndAngle, juce::Slider& slider) override
+    {
+        
+
+        auto radius = (float)juce::jmin(width / 2, height / 2) - 2.0f;
+        auto centerX = (float)x + (float)width * 0.5f;
+        auto centerY = (float)y + (float)height * 0.5f;
+        auto rx = centerX - radius;
+        auto ry = centerY - radius;
+        auto rw = radius * 2.0f;
+        
+        auto angle = rotaryStartAngle + sliderPos * (rotaryEndAngle - rotaryStartAngle);
+        auto isMouseOver = slider.isMouseOverOrDragging() && slider.isEnabled();
+
+
+        
+
+        juce::ColourGradient rotGrade{ accent2Color, juce::Point<float>{centerX, centerY}, accent1Color, juce::Point<float>{rx, ry}, true };
+        
+        
+        if (!isMouseOver)
+        {
+            
+            rotGrade.setColour(0, rotGrade.getColour(0).darker(0.2f));
+            rotGrade.setColour(1, rotGrade.getColour(1).brighter(0.2f));
+            //rotGrade.addColour(0.3, juce::Colours::red);
+        }
+        
+        //Make a rect with a gradeint fill circle that needle reveals
+        //FIX ME
+
+        g.setGradientFill(rotGrade);
+
+
+        juce::Rectangle<float> mainRect(rx, ry, rw, rw);
+        
+        auto lineThickness = juce::jmin(15.0f, (float)juce::jmin(width, height) * 0.45f) * 0.1f;
+        juce::Path mainCircle;
+        mainCircle.addArc(rx, ry, rw, rw, rotaryStartAngle, rotaryStartAngle * 4, true);
+        g.fillPath(mainCircle);
+        
+
+        g.setColour(juce::Colours::black);
+        
+        juce::Path p;
+        auto pointerLength = radius * 0.5f;
+        auto pointerThickness = 5.0f;
+        p.addRectangle(-pointerThickness * 0.5f, - radius, pointerThickness, pointerLength);
+        p.applyTransform(juce::AffineTransform::rotation(angle).translated(centerX, centerY));
+        g.fillPath(p);
+
+    }
+        
 
 private:
 
