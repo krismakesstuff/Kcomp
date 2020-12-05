@@ -268,7 +268,10 @@ void KcompAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
 
     kComp.process(context);
     
-    levelMeterGetter.setReductionLevel(buffer.getMagnitude(0, buffer.getNumSamples()));
+    levelMeterGetter.setReductionLevel(buffer.getMagnitude(0, 0, buffer.getNumSamples()), 0);
+    levelMeterGetter.setReductionLevel(buffer.getMagnitude(1, 0, buffer.getNumSamples()), 1);
+    //levelMeterGetter.setReductionLevel(buffer.getRMSLevel(0, 0, buffer.getNumSamples()), 0);
+    //levelMeterGetter.setReductionLevel(buffer.getRMSLevel(1, 0, buffer.getNumSamples()), 1);
 
    /* postRMSL = buffer.getRMSLevel(0, buffer.getSample(0, 0), buffer.getNumSamples());
     postRMSR = buffer.getRMSLevel(1, buffer.getSample(1, 0), buffer.getNumSamples());*/

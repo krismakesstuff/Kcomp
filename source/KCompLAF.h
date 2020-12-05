@@ -31,8 +31,8 @@ public:
     juce::Colour accent1Color{ juce::Colours::yellow };
     juce::Colour accent2Color{ juce::Colours::red.brighter(0.2f) };
 
-    juce::Font mainFont{ "Unispace", 14.0f, juce::Font::FontStyleFlags::bold };
-    juce::Font smallFont{ "Unispace", 11.5f, juce::Font::FontStyleFlags::plain };
+    juce::Font mainFont{ "Unispace", 13.0f, juce::Font::FontStyleFlags::bold };
+    juce::Font smallFont{ "Unispace", 10.0f, juce::Font::FontStyleFlags::plain };
 
     juce::Colour fontColor{ juce::Colours::white };
 
@@ -52,6 +52,8 @@ public:
         //Button Colors
         setColour(juce::TextButton::ColourIds::buttonColourId, juce::Colours::red);
         setColour(juce::TextButton::ColourIds::buttonOnColourId, juce::Colours::yellow);
+
+        
         
     }
 
@@ -225,15 +227,16 @@ public:
 
         
 
-        if (relativeBounds.getX() > label.getPeer()->getBounds().getWidth() / 2)
+        /*if (relativeBounds.getX() > label.getPeer()->getBounds().getWidth() / 2)
         {
             grade = juce::ColourGradient::horizontal<float>(baseColor, baseColor.withAlpha(0.1f), bounds);
         }
         else
         {
             grade = juce::ColourGradient::horizontal<float>(baseColor.withAlpha(0.1f), baseColor, bounds);
-        }
+        }*/
 
+        grade = juce::ColourGradient::vertical<float>(baseColor.withAlpha(0.1f), baseColor, bounds);
         grade.multiplyOpacity(0.8f);
         
         auto bg = bounds.reduced(1);
@@ -241,15 +244,13 @@ public:
         g.setGradientFill(grade);
         g.fillRoundedRectangle(bg.toFloat(), 1.0f);
 
-        g.setFont(mainFont);
+        g.setFont(label.getFont());
         g.setColour(fontColor);
-        g.drawText(label.getText(true), bounds, juce::Justification::centred);
+        //g.drawText(label.getText(true), bounds, juce::Justification::centred);
 
-
+        g.drawFittedText(label.getText(true), bounds.toNearestInt().reduced(2), juce::Justification::centred,1,0.0f);
 
     }
-
-   
 
 private:
 

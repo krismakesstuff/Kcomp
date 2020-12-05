@@ -25,7 +25,7 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     addAndMakeVisible(inputSlider);
     
     inputSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
-    inputSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 55, 20);
+    inputSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 45, 20);
     inputSlider.setColour(juce::Slider::ColourIds::textBoxOutlineColourId, juce::Colours::transparentBlack);
     inputSlider.setColour(juce::Slider::ColourIds::textBoxBackgroundColourId, juce::Colours::transparentBlack);
     inputGainAttachment.reset(new SliderAttachment(valueTreeState, inputGainParam_ID, inputSlider));
@@ -34,6 +34,8 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     addAndMakeVisible(inputLabel);
     inputLabel.attachToComponent(&inputSlider, false);
     inputLabel.setJustificationType(juce::Justification::centred);
+    inputLabel.setFont(kCompLaf.mainFont);
+    
 
     //Threshold
     addAndMakeVisible(thresholdSlider);
@@ -45,6 +47,7 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     addAndMakeVisible(thresholdLabel);
     thresholdLabel.attachToComponent(&thresholdSlider, false);
     thresholdLabel.setJustificationType(juce::Justification::centred);
+    thresholdLabel.setFont(kCompLaf.mainFont);
 
     //Make-Up Gain
     addAndMakeVisible(makeUpGainSlider);
@@ -56,7 +59,7 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     addAndMakeVisible(makeUpGainLabel);
     makeUpGainLabel.attachToComponent(&makeUpGainSlider, false);
     makeUpGainLabel.setJustificationType(juce::Justification::centred);
-    //makeUpGainLabel.setFont({ 15.0f, juce::Font::FontStyleFlags::plain });
+    makeUpGainLabel.setFont(kCompLaf.mainFont);
 
     //Ratio Buttons
     addAndMakeVisible(ratio1Button);
@@ -93,13 +96,13 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
 
     addAndMakeVisible(ratioLabel);
     ratioLabel.setJustificationType(juce::Justification::centred);
-    //ratioLabel.setFont({ 12.0f, juce::Font::FontStyleFlags::plain });
+    ratioLabel.setFont(kCompLaf.smallFont);
 
     
     //Attack
     addAndMakeVisible(attackSlider);
     attackSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
-    attackSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 55, 20);
+    attackSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 45, 20);
     attackSlider.setColour(juce::Slider::ColourIds::textBoxOutlineColourId, juce::Colours::transparentBlack);
     attackSlider.setColour(juce::Slider::ColourIds::textBoxBackgroundColourId, juce::Colours::transparentBlack);
     attackSliderAttachment.reset(new SliderAttachment(valueTreeState, attackParam_ID, attackSlider));
@@ -108,11 +111,12 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     addAndMakeVisible(attackLabel);
     attackLabel.attachToComponent(&attackSlider, false);
     attackLabel.setJustificationType(juce::Justification::centred);
+    attackLabel.setFont(kCompLaf.mainFont);
 
     //Release
     addAndMakeVisible(releaseSlider);
     releaseSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
-    releaseSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 50, 20);
+    releaseSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 45, 20);
     releaseSlider.setColour(juce::Slider::ColourIds::textBoxOutlineColourId, juce::Colours::transparentBlack);
     releaseSlider.setColour(juce::Slider::ColourIds::textBoxBackgroundColourId, juce::Colours::transparentBlack);
     releaseSliderAttachment.reset(new SliderAttachment(valueTreeState, releaseParam_ID, releaseSlider));
@@ -121,6 +125,7 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     addAndMakeVisible(releaseLabel);
     releaseLabel.attachToComponent(&releaseSlider, false);
     releaseLabel.setJustificationType(juce::Justification::centred);
+    releaseLabel.setFont(kCompLaf.mainFont);
 
     //Tame
     addAndMakeVisible(tameButton);
@@ -130,18 +135,19 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     tameButton.setButtonText("Tame");
     tameButtonAttachment.reset(new ButtonAttachment(valueTreeState, filterParam_ID, tameButton));
     tameButton.onClick = [this] { audioProcessor.setFilterBypass(tameButton.getToggleState()); };
+    
 
     //DryWet
     addAndMakeVisible(dryWetSlider);
     dryWetSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
-    dryWetSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::NoTextBox, false, 50, 20);
+    dryWetSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::NoTextBox, false, 45, 20);
     dryWetSliderAttachment.reset(new SliderAttachment(valueTreeState, dryWetParam_ID, dryWetSlider));
     dryWetSlider.onValueChange = [this] { audioProcessor.setDryWetMix(dryWetSlider.getValue()); };
 
     addAndMakeVisible(dryLabel);
-    dryLabel.setFont({ 11.0f, juce::Font::FontStyleFlags::plain });
+    dryLabel.setFont(kCompLaf.smallFont);
     addAndMakeVisible(wetLabel);
-    wetLabel.setFont({ 11.0f, juce::Font::FontStyleFlags::plain });
+    wetLabel.setFont(kCompLaf.smallFont);
 
     //RMS Labels
     //addAndMakeVisible(preRMSLabel);
@@ -155,7 +161,7 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     //Output Gain 
     addAndMakeVisible(outputGainSlider);
     outputGainSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
-    outputGainSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 50, 20);
+    outputGainSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 45, 20);
     outputGainSlider.setColour(juce::Slider::ColourIds::textBoxOutlineColourId, juce::Colours::transparentBlack);
     outputGainSlider.setColour(juce::Slider::ColourIds::textBoxBackgroundColourId, juce::Colours::transparentBlack);
     outputGainSliderAttachment.reset(new SliderAttachment(valueTreeState, outputGainParam_ID, outputGainSlider));
@@ -164,7 +170,7 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     addAndMakeVisible(outputGainLabel);
     outputGainLabel.attachToComponent(&outputGainSlider, false);
     outputGainLabel.setJustificationType(juce::Justification::centred);
-    outputGainLabel.setFont({ 15.0f, juce::Font::FontStyleFlags::plain });
+    outputGainLabel.setFont(kCompLaf.mainFont);
 
 
     setResizable(true, true);
