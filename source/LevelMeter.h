@@ -177,6 +177,12 @@ public:
             updateMeter = true;
         }
 
+        /*template<typename FloatType>
+        void loadReductionData(const juce::AudioBuffer<FloatType>& buffer)
+        {
+
+        }*/
+
         void decay()
         {
             juce::int64 time = juce::Time::currentTimeMillis();
@@ -189,7 +195,7 @@ public:
             for (size_t channel = 0; channel < meterData.size(); ++channel)
             {
                 meterData[channel].setLevels(lastMeasurement, 0.0f, 0.0f, holdMS);
-                meterData[channel].reduction = 1.0f;
+                meterData[channel].reduction = 0.0f;
             }
 
             updateMeter = true;
@@ -215,19 +221,17 @@ public:
             holdMS = millis;
         }
 
-
-
         void setReductionLevel(const float newReduction)
         {
             for (auto& channel : meterData)
             {
-                channel.reduction = newReduction;
+                channel.reduction = channel.max - newReduction;
             }
         }
 
         float getReductionLevel(const int channel) const
         {
-            //FIX ME
+            return meterData.at(size_t(channel)).reduction;
         }
 
         float getRMSLevel(const int channel) const
@@ -327,11 +331,12 @@ public:
         
         float rmsDB;
         float peakDB;
+        float reduction;
 
 
         for (auto channel = 0; channel < source->meterData.size() ; ++channel)
         {
-            g.setColour(meterColor.brighter());
+            g.setColour(meterColor);
             juce::Rectangle<float> channelRect = area;
 
             //Divides the bounds by number of Channels to space them, then sets its postion
@@ -348,7 +353,7 @@ public:
                 meter->setLeft(prevMeter->getRight() + 4);
             }
 
-            //draws Meter
+            //draws Level Meter
             rmsDB = juce::Decibels::gainToDecibels(source->getRMSLevel(channel), infinity);
             peakDB = juce::Decibels::gainToDecibels(source->getMaxLevel(channel), infinity);
             g.fillRect(meter->withTop(meter->getY() + rmsDB * meter->getHeight() / infinity));
@@ -368,6 +373,15 @@ public:
                 g.fillRect(meter->getX(), channelRect.getY(), meter->getWidth(), 5.0f);
             }
             
+            //draws Reduction Meter
+            //FIX MEE
+            //
+            //
+            /*auto reInfinity = infinity + 70.0f;
+            reduction = juce::Decibels::gainToDecibels(source->getReductionLevel(channel), reInfinity);
+            juce::Rectangle<float> reductionMeter = meter->reduced(10.0f, 10.0f);
+            g.setColour(juce::Colours::blue.withAlpha(0.5f));
+            g.fillRect(reductionMeter.withBottom(reductionMeter.getY() + reduction * reductionMeter.getHeight()/ reInfinity));*/
             
         }
 
@@ -451,7 +465,7 @@ private:
     float meterHeight{};
 
     juce::Colour meterBGColor{ juce::Colours::black };
-    juce::Colour meterColor{ juce::Colours::green };
+    juce::Colour meterColor{ juce::Colours::lime };
 
     int refreshRate = 60;
     

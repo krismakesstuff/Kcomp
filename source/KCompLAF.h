@@ -23,8 +23,8 @@ public:
     
     juce::Colour mainBGColor{ juce::Colours::purple.darker(0.9f) };
 
-    juce::Colour controlsBGColor{ juce::Colours::darkslateblue.withAlpha(0.9f) };
-    juce::Colour controls1Color{ juce::Colours::blue.withAlpha(0.9f).darker(0.4f) };
+    juce::Colour controlsBGColor{ juce::Colours::darkslateblue/*.withAlpha(0.9f)*/ };
+    juce::Colour controls1Color{ juce::Colours::blue.withAlpha(0.7f).darker(0.4f) };
     juce::Colour controls2Color{ juce::Colours::darkgreen };
 
     juce::Colour spectrumColor{ juce::Colours::red.withAlpha(0.7f) };
@@ -33,6 +33,8 @@ public:
 
     juce::Font mainFont{ "Unispace", 14.0f, juce::Font::FontStyleFlags::bold };
     juce::Font smallFont{ "Unispace", 11.5f, juce::Font::FontStyleFlags::plain };
+
+    juce::Colour fontColor{ juce::Colours::white };
 
 
     //FIX ME
@@ -69,7 +71,7 @@ public:
         
         if (isButtonDown || isHighlighted)
         {
-            color = isHighlighted ? color.contrasting(0.1f) : color.contrasting(0.5f);
+            color = isHighlighted ? color.contrasting(0.3f) : color.contrasting(0.5f);
             onColor = isHighlighted ? onColor.contrasting(0.1f) : onColor.contrasting(0.5f);
         }
         
@@ -144,12 +146,18 @@ public:
         mainCircle.addArc(rx, ry, rw, rw, rotaryStartAngle, rotaryStartAngle * 4, true);
         g.fillPath(mainCircle);
 
-        g.setColour(juce::Colours::black.withAlpha(0.7f));
+       // g.setColour(juce::Colours::black.withAlpha(0.7f));
+        g.setColour(juce::Colours::black);
         
+
+        //TODO
+        //Make needle a cool Synthwave Triangle
         juce::Path p;
         auto pointerLength = radius * 0.7f;
         auto pointerThickness = 5.0f;
         p.addRectangle(-pointerThickness * 0.5f, - radius, pointerThickness, pointerLength);
+        //p.addTriangle(-pointerThickness * 0.5f, -radius, radius * 0.5f , ry , radius * 0.8f, rx );
+        //p.addTriangle({ centerX * 0.5f, centerY * 0.5f }, { rx, ry}, { centerX * 0.2f, centerY * 0.2f });
         p.applyTransform(juce::AffineTransform::rotation(angle).translated(centerX, centerY));
         g.fillPath(p);
 
@@ -207,31 +215,39 @@ public:
         
     }
 
-    //juce::Slider::SliderLayout getSliderLayout(juce::Slider& slider) override
-    //{
-    //    if (slider.getSliderStyle() == juce::Slider::SliderStyle::LinearVertical)
-    //    {
-    //        juce::Slider::SliderLayout layout;
+    void drawLabel(juce::Graphics& g, juce::Label& label) override
+    {
 
-    //        auto bounds = slider.getLocalBounds();
-    //        auto centerX = bounds.getCentreX();
-    //        auto sliderWidth = bounds.getWidth() / 3;
-    //        auto textBoxWidth = bounds.getWidth() / 5;
+        auto bounds = label.getLocalBounds().toFloat();
+        auto relativeBounds = label.getBoundsInParent();
 
-    //        auto pos = slider.getValueObject().toString();
-    //        DBG(pos);
+        juce::ColourGradient grade;
 
-    //        layout.textBoxBounds = juce::Rectangle<int>(centerX - 25, 0, 50, 20);
-    //        layout.sliderBounds = juce::Rectangle<int>(centerX - (sliderWidth/2), 2, sliderWidth , bounds.getHeight());
+        
 
-    //        return layout;
-    //    }
-    //    else //Calls default SliderLayout 
-    //    {
-    //        return juce::LookAndFeel_V4::getSliderLayout(slider);
-    //    }
-    //}
-    
+        if (relativeBounds.getX() > label.getPeer()->getBounds().getWidth() / 2)
+        {
+            grade = juce::ColourGradient::horizontal<float>(baseColor, baseColor.withAlpha(0.1f), bounds);
+        }
+        else
+        {
+            grade = juce::ColourGradient::horizontal<float>(baseColor.withAlpha(0.1f), baseColor, bounds);
+        }
+
+        grade.multiplyOpacity(0.8f);
+        
+        auto bg = bounds.reduced(1);
+
+        g.setGradientFill(grade);
+        g.fillRoundedRectangle(bg.toFloat(), 1.0f);
+
+        g.setFont(mainFont);
+        g.setColour(fontColor);
+        g.drawText(label.getText(true), bounds, juce::Justification::centred);
+
+
+
+    }
 
    
 

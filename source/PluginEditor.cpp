@@ -25,7 +25,7 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     addAndMakeVisible(inputSlider);
     
     inputSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
-    inputSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 50, 20);
+    inputSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 55, 20);
     inputSlider.setColour(juce::Slider::ColourIds::textBoxOutlineColourId, juce::Colours::transparentBlack);
     inputSlider.setColour(juce::Slider::ColourIds::textBoxBackgroundColourId, juce::Colours::transparentBlack);
     inputGainAttachment.reset(new SliderAttachment(valueTreeState, inputGainParam_ID, inputSlider));
@@ -93,13 +93,13 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
 
     addAndMakeVisible(ratioLabel);
     ratioLabel.setJustificationType(juce::Justification::centred);
-    ratioLabel.setFont({ 12.0f, juce::Font::FontStyleFlags::plain });
+    //ratioLabel.setFont({ 12.0f, juce::Font::FontStyleFlags::plain });
 
     
     //Attack
     addAndMakeVisible(attackSlider);
     attackSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
-    attackSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 50, 20);
+    attackSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 55, 20);
     attackSlider.setColour(juce::Slider::ColourIds::textBoxOutlineColourId, juce::Colours::transparentBlack);
     attackSlider.setColour(juce::Slider::ColourIds::textBoxBackgroundColourId, juce::Colours::transparentBlack);
     attackSliderAttachment.reset(new SliderAttachment(valueTreeState, attackParam_ID, attackSlider));
@@ -152,7 +152,6 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     levelMeter.setMeterSource(audioProcessor.getLevelMeterGetter());
     
     
-
     //Output Gain 
     addAndMakeVisible(outputGainSlider);
     outputGainSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
@@ -198,7 +197,7 @@ void KcompAudioProcessorEditor::paint (juce::Graphics& g)
     auto dryWetControlsBG = controlsBackground.withLeft(makeUpGainSlider.getRight());
 
     //Middle of Rectangle
-    auto centerBG = controlsBackground.withLeft(compControlsBG.getRight() - 5).withRight(dryWetControlsBG.getX() + 5);
+    auto centerBG = controlsBackground.withLeft(compControlsBG.getRight() + 5 ).withRight(dryWetControlsBG.getX() - 5);
     auto leftCenterBG = centerBG.withRight(centerBG.getCentreX());
     auto rightCenterBG = centerBG.withLeft(centerBG.getCentreX());
 
@@ -217,9 +216,7 @@ void KcompAudioProcessorEditor::paint (juce::Graphics& g)
     //Title image
     
     g.drawImage(titleImage, titleRect, juce::RectanglePlacement::centred);
-    /*juce::DropShadowEffect dropShadow;
-    titleRect.reduce(5.0f, 5.0f);
-    dropShadow.applyEffect(titleImage, g, 0.5f, 0.5f);*/
+    
     
     //Kcomp Rectangle
 
@@ -232,12 +229,12 @@ void KcompAudioProcessorEditor::paint (juce::Graphics& g)
     juce::ColourGradient leftGrade = juce::ColourGradient::horizontal<int>(kCompLaf.controls1Color.darker(), kCompLaf.controls1Color, compControlsBG);
     //leftGrade.addColour(0.5f, kCompLaf.spectrumColor);
     g.setGradientFill(leftGrade);
-    g.fillRoundedRectangle(compControlsBG.toFloat(), 6.5f);
+    g.fillRoundedRectangle(compControlsBG.toFloat(), 4.0f);
 
     //Right side of Rectangle
     juce::ColourGradient rightGrade = juce::ColourGradient::horizontal<int>(kCompLaf.controls1Color, kCompLaf.controls1Color.darker(), dryWetControlsBG);
     g.setGradientFill(rightGrade);
-    g.fillRoundedRectangle(dryWetControlsBG.toFloat(), 6.5f);
+    g.fillRoundedRectangle(dryWetControlsBG.toFloat(), 4.0f);
     
     //Middle of Rectangle
     
@@ -294,23 +291,26 @@ void KcompAudioProcessorEditor::resized()
 
     //Left side of Center Section
     inputSlider.setBounds(controlsBackground.getX() + leftIndent, controlsBackground.getY() + space , ratioW + 15, ratioH + 30);
+    //tameButton.setBounds(controlsBackground.getX() + leftIndent + 30, controlsBackground.getY() + (space * 4) - 40, ratioW - 40, ratioH / 2);
+    ratioLabel.setBounds(controlsBackground.getX() + leftIndent + 55, controlsBackground.getY() + (space * 3) - 20, (ratioW / 4) + 15, (ratioH / 4) + 5);
+    ratio1Button.setBounds(controlsBackground.getX() + leftIndent + 10 , controlsBackground.getY() + (space * 3) + 5 , ratioW/4, ratioH/4 + 5);
+    ratio2Button.setBounds(ratio1Button.getRight(), controlsBackground.getY() + (space * 3) + 5 , ratioW/4, (ratioH/4) + 5);
+    ratio3Button.setBounds(ratio2Button.getRight(), controlsBackground.getY() + (space * 3) + 5, ratioW/4, (ratioH / 4) + 5);
+    ratio4Button.setBounds(ratio3Button.getRight(), controlsBackground.getY() + (space * 3) + 5, ratioW/4, (ratioH / 4) + 5);
 
-    ratioLabel.setBounds(controlsBackground.getX() + leftIndent + 60, controlsBackground.getY() + (space * 3) + 5, ratioW / 4, (ratioH / 4) + 5);
-    ratio1Button.setBounds(controlsBackground.getX() + leftIndent + 10 , controlsBackground.getY() + (space * 3) - 20, ratioW/4, ratioH/4 + 5);
-    ratio2Button.setBounds(ratio1Button.getRight(), controlsBackground.getY() + (space * 3) -20, ratioW/4, (ratioH/4) + 5);
-    ratio3Button.setBounds(ratio2Button.getRight(), controlsBackground.getY() + (space * 3) -20, ratioW/4, (ratioH / 4) + 5);
-    ratio4Button.setBounds(ratio3Button.getRight(), controlsBackground.getY() + (space * 3) -20, ratioW/4, (ratioH / 4) + 5);
-
-    tameButton.setBounds(controlsBackground.getX() + leftIndent + 30, controlsBackground.getY() + (space * 4) - 40, ratioW - 40, ratioH /2);
-    attackSlider.setBounds(controlsBackground.getX() - 15 , controlsBackground.getY() + (space * 5) - 30, ratioW - 20, ratioH);
-    releaseSlider.setBounds(attackSlider.getRight() - 15, controlsBackground.getY() + (space * 5) - 30, ratioW - 20, ratioH);
+    
+    attackSlider.setBounds(controlsBackground.getX() + 5, controlsBackground.getY() + (space * 5) - 45, ratioW - 45, ratioH);
+    releaseSlider.setBounds(attackSlider.getRight() , controlsBackground.getY() + (space * 5) - 45, ratioW - 45, ratioH);
 
 
     //Right side of Center Section
     outputGainSlider.setBounds(makeUpGainSlider.getRight() + 50, controlsBackground.getY() + (controlsBackground.getHeight() / 6), (controlsBackground.getHeight()/5) + 20, (controlsBackground.getWidth() /6) + 20);
-    dryWetSlider.setBounds(makeUpGainSlider.getRight() + 72, controlsBackground.getY() + (controlsBackground.getHeight() /1.8), (controlsBackground.getHeight() / 5) - 25 , (controlsBackground.getWidth() / 6) - 25);
-    dryLabel.setBounds(dryWetSlider.getX() , dryWetSlider.getBottom() - 10, 40, 20);
-    wetLabel.setBounds(dryWetSlider.getRight() - 30 , dryWetSlider.getBottom() - 10, 40, 20);
+
+    tameButton.setBounds(makeUpGainSlider.getRight() + 55, outputGainSlider.getBottom() + 15, ratioW - 40, ratioH / 2);
+
+    dryWetSlider.setBounds(makeUpGainSlider.getRight() + 72, controlsBackground.getY() + (controlsBackground.getHeight() /1.5), (controlsBackground.getHeight() / 5) - 25 , (controlsBackground.getWidth() / 6) - 25);
+    dryLabel.setBounds(dryWetSlider.getX() -10 , dryWetSlider.getBottom() - 10, 40, 20);
+    wetLabel.setBounds(dryWetSlider.getRight() - 25 , dryWetSlider.getBottom() - 10, 40, 20);
 
 
 }
