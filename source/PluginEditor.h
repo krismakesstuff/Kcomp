@@ -12,6 +12,7 @@
 #include "PluginProcessor.h"
 #include "LevelMeter.h"
 #include "KCompLAF.h"
+#include "Klog.h"
 
 //==============================================================================
 /**
@@ -36,7 +37,7 @@ public:
     
     void updateRatioState(juce::Button*, juce::String);
 
-
+    void makeDebugger(bool makeActive);
 
     /*void timerCallback() override;*/
 
@@ -49,7 +50,6 @@ private:
         ratioButtonGroup = 42
     };
 
-    //juce::Label kCompTitle{juce::String(), "KCOMP"};
     juce::Rectangle<int> controlsBackground;
 
     juce::Image titleImage;
@@ -76,7 +76,7 @@ private:
     std::unique_ptr<ButtonAttachment> ratio3ButtonAttachment;
     std::unique_ptr<ButtonAttachment> ratio4ButtonAttachment;
 
-    //KSlider thresholdSlider;
+    
     juce::Slider thresholdSlider;
     juce::Label thresholdLabel{ juce::String(), "Threshold" };
     std::unique_ptr <SliderAttachment> thresholdSliderAttachment;
@@ -105,7 +105,8 @@ private:
     //juce::Label preRMSLabel{juce::String() ,"666"};
     //juce::Label postRMSLabel{juce::String(), "777"};
     
-
+    juce::TextButton debugModeButton;
+    SafePointer<Klog> logger;
     
 
     LevelMeter levelMeter;
@@ -117,6 +118,12 @@ private:
 
 
     KCompLAF kCompLaf;
+
+
+
+    //Log logger;
+    
+
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (KcompAudioProcessorEditor)
 };

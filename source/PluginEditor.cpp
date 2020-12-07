@@ -9,17 +9,47 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+
+
+
+
 //==============================================================================
 KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juce::AudioProcessorValueTreeState& vts)
     : AudioProcessorEditor(&p), audioProcessor(p), valueTreeState(vts), levelMeter(p.getTotalNumInputChannels())
 {
-    getLookAndFeel().setDefaultLookAndFeel(&kCompLaf);
 
+    
+    //Debug Mode
+    addAndMakeVisible(debugModeButton);
+    debugModeButton.setButtonText("Debug Mode");
+    debugModeButton.setClickingTogglesState(true);
+    //debugModeButton.setToggleState(false, juce::dontSendNotification);
+    //makeDebugger(true);
+    debugModeButton.onClick = [this] { makeDebugger(debugModeButton.getToggleState()); };
+
+
+    getLookAndFeel().setDefaultLookAndFeel(&kCompLaf);
     getLookAndFeel().setDefaultSansSerifTypefaceName("Unispace");
 
+    juce::File currentApp{ juce::File::getSpecialLocation(juce::File::SpecialLocationType::currentApplicationFile) };
+    juce::String titlePath;
+    juce::String gridPath;
 
-    titleImage = juce::ImageFileFormat::loadFrom(juce::File(juce::File::getCurrentWorkingDirectory().getChildFile("Resources/Title.png")));
-    mainBGImage = juce::ImageFileFormat::loadFrom(juce::File(juce::File::getCurrentWorkingDirectory().getChildFile("Resources/grid.png")));
+    if (currentApp.getFullPathName().contains("Kcomp.exe"))
+    {
+        titlePath = currentApp.getFullPathName().replace("\Kcomp.exe", "Resources\\Title.png");
+        gridPath = currentApp.getFullPathName().replace("\Kcomp.exe", "Resources\\grid.png");
+    }
+    else
+    {
+        titlePath = currentApp.getFullPathName().replace("\Kcomp.vst3", "Resources\\Title.png");
+        gridPath = currentApp.getFullPathName().replace("\Kcomp.vst3", "Resources\\grid.png");
+    }
+    
+    
+    titleImage = juce::ImageFileFormat::loadFrom(titlePath);
+    mainBGImage = juce::ImageFileFormat::loadFrom(gridPath);
+
 
     //Input 
     addAndMakeVisible(inputSlider);
@@ -188,7 +218,8 @@ KcompAudioProcessorEditor::~KcompAudioProcessorEditor()
         getChildComponent(child)->setLookAndFeel(nullptr);
     }
 
-    //stopTimer();
+    logger.deleteAndZero();
+
 }
 
 //==============================================================================
@@ -274,7 +305,8 @@ void KcompAudioProcessorEditor::resized()
 
     titleRect.setBounds(0, 0, area.getWidth() /*- (area.getWidth() - 100)*/, 100);
 
-    
+    debugModeButton.setBounds(titleRect.getRight() - 100, getY() + 10, 50, 30);
+
     controlsBackground = area.reduced(10);
     controlsBackground.setLeft(area.getX() + 10);
     controlsBackground.setRight(area.getRight() - 10);
@@ -365,10 +397,30 @@ void KcompAudioProcessorEditor::updateRatioState(juce::Button* activeButton, juc
     repaint();
 }
 
+void KcompAudioProcessorEditor::makeDebugger(bool makeActive)
+{
+    if (makeActive)
+    {
+        logger = new Klog("Debug Window", juce::Colours::black, juce::DocumentWindow::TitleBarButtons::allButtons);
+        juce::File cwd{ juce::File::getCurrentWorkingDirectory() };
+        juce::File hostApp{ juce::File::getSpecialLocation(juce::File::SpecialLocationType::hostApplicationPath) };
+        juce::File currentApp{ juce::File::getSpecialLocation(juce::File::SpecialLocationType::currentApplicationFile) };
+        juce::File currentExe{ juce::File::getSpecialLocation(juce::File::SpecialLocationType::currentExecutableFile) };
+        juce::File globalApp{ juce::File::getSpecialLocation(juce::File::SpecialLocationType::userHomeDirectory) };
 
-//void KcompAudioProcessorEditor::timerCallback()
-//{
-//    
-//    
-//}
+        logger->printDebug(cwd.getFullPathName(), "Current Working Drive");
+        logger->printDebug(hostApp.getFullPathName(), "Host App");
+        logger->printDebug(currentApp.getFullPathName(), "Current App");
+        logger->printDebug(currentExe.getFullPathName(), "Current Exe");
+        logger->printDebug(globalApp.getFullPathName(), "User Home");
+
+
+    }
+    else
+    {
+        logger.deleteAndZero();
+    }
+}
+
+
 
