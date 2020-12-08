@@ -53,6 +53,7 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     logger->printDebug(audioProcessor.getStateForDebug(), "Boot State");
 
     getLookAndFeel().setDefaultLookAndFeel(&kCompLaf);
+    //setLookAndFeel(&kCompLaf);
     getLookAndFeel().setDefaultSansSerifTypefaceName("Unispace");
 
 
@@ -87,11 +88,12 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     inputSlider.setColour(juce::Slider::ColourIds::textBoxBackgroundColourId, juce::Colours::transparentBlack);
     inputGainAttachment.reset(new SliderAttachment(valueTreeState, inputGainParam_ID, inputSlider));
     inputSlider.onValueChange = [this] { audioProcessor.setInputGain(inputSlider.getValue()); };
-
+    
     addAndMakeVisible(inputLabel);
     inputLabel.attachToComponent(&inputSlider, false);
     inputLabel.setJustificationType(juce::Justification::centred);
     inputLabel.setFont(kCompLaf.mainFont);
+   
 
     //Threshold
     addAndMakeVisible(thresholdSlider);
@@ -209,11 +211,20 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     //addAndMakeVisible(preRMSLabel);
     //addAndMakeVisible(postRMSLabel);
 
+    //Gain Reduction Label
+    addAndMakeVisible(gainReductionLabel);
+    gainReductionLabel.setFont(kCompLaf.smallFont);
+    gainReductionLabel.setColour(juce::Label::ColourIds::backgroundColourId, juce::Colours::transparentBlack);
+
     //Level Meter
     addAndMakeVisible(levelMeter);
     levelMeter.setMeterSource(audioProcessor.getLevelMeterGetter());
     
-    
+    //Peak Label
+    addAndMakeVisible(peakLabel);
+    peakLabel.setFont(kCompLaf.smallFont);
+    peakLabel.setColour(juce::Label::ColourIds::backgroundColourId, juce::Colours::transparentBlack);
+
     //Output Gain 
     addAndMakeVisible(outputGainSlider);
     outputGainSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
@@ -280,7 +291,6 @@ void KcompAudioProcessorEditor::paint (juce::Graphics& g)
     g.drawImageWithin(mainBGImage, getX(), getY(), getWidth(), getHeight(), juce::RectanglePlacement::fillDestination);
     
     //Title image
-    
     g.drawImage(titleImage, titleRect, juce::RectanglePlacement::centred);
     
     
@@ -303,25 +313,14 @@ void KcompAudioProcessorEditor::paint (juce::Graphics& g)
     g.fillRoundedRectangle(dryWetControlsBG.toFloat(), 4.0f);
     
     //Middle of Rectangle
-    
-    
-
     juce::ColourGradient leftCGrade = juce::ColourGradient::horizontal<int>(kCompLaf.controlsBGColor.darker(), kCompLaf.spectrumColor, leftCenterBG);
-    //leftCGrade.addColour(0.5 ,kCompLaf.controlsBGColor.brighter());
     g.setGradientFill(leftCGrade);
     g.fillRect(leftCenterBG);
     juce::ColourGradient rightCGrade = juce::ColourGradient::horizontal<int>(kCompLaf.spectrumColor, kCompLaf.controlsBGColor.darker(), rightCenterBG);
-    //rightCGrade.addColour(0.5, kCompLaf.controlsBGColor.brighter());
     g.setGradientFill(rightCGrade);
     g.fillRect(rightCenterBG);
 
-    //Borders
-    /*g.setGradientFill(juce::ColourGradient::vertical<int>(kCompLaf.controls1Color.darker().withAlpha(0.5f), kCompLaf.controls1Color.brighter().withAlpha(0.0f), topBorder));
-    g.fillRect(topBorder);
-    g.setGradientFill(juce::ColourGradient::vertical<int>(kCompLaf.controls1Color.brighter().withAlpha(0.0f), kCompLaf.controls1Color.darker().withAlpha(0.5f), bottomBorder));
-    g.fillRect(bottomBorder);*/
 
-    
 }
 
 void KcompAudioProcessorEditor::resized()
@@ -336,6 +335,7 @@ void KcompAudioProcessorEditor::resized()
 
     presetsCombo.setBounds(titleRect.getRight() - 150, getY() + 40, 110, 25);
 
+
     controlsBackground = area.reduced(10);
     controlsBackground.setLeft(area.getX() + 10);
     controlsBackground.setRight(area.getRight() - 10);
@@ -344,7 +344,11 @@ void KcompAudioProcessorEditor::resized()
 
     //Center Section
     thresholdSlider.setBounds((controlsBackground.getWidth() / 4.5) + 30, controlsBackground.getY() + 40, controlsBackground.getWidth() / 7, controlsBackground.getHeight() - 57);
+    
     levelMeter.setBounds(thresholdSlider.getRight() + 10, controlsBackground.getY() + 50, controlsBackground.getWidth()/5, controlsBackground.getHeight() - 55);
+    gainReductionLabel.setBounds(levelMeter.getX() + (levelMeter.getWidth() / 2) - 20, levelMeter.getY() - 5, 40, 20);
+    peakLabel.setBounds(levelMeter.getX() + (levelMeter.getWidth() / 2) - 20, levelMeter.getBottom() - 15 , 40, 20);
+
     makeUpGainSlider.setBounds(levelMeter.getRight() + 10, controlsBackground.getY() + 40, controlsBackground.getWidth() / 7, controlsBackground.getHeight() - 57);
 
     //preRMSLabel.setBounds(inputSlider.getRight() + 10, controlsBackground.getBottom() - 20, 50, 20);

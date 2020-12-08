@@ -130,7 +130,9 @@ private:
     //juce::Label postRMSLabel{juce::String(), "777"};
     
     LevelMeter levelMeter;
-    
+    juce::Label gainReductionLabel{ juce::String(), "GR" };
+    juce::Label peakLabel{ juce::String(), "Peak" };
+
     juce::AudioProcessorValueTreeState& valueTreeState;
     KcompAudioProcessor& audioProcessor;
 

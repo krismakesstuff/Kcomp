@@ -66,13 +66,12 @@ public:
             std::atomic<float> maxOverall;
             std::atomic<bool> clip;
             std::atomic<float> reduction;
+            std::atomic<float> prevReduction;
 
             std::atomic<double> rmsSum;
             std::atomic<juce::int64> hold;
             std::vector<double> rmsHistory;
             size_t rmsPtr;
-
-            
 
 
             float getAvgRMS() const
@@ -85,7 +84,6 @@ public:
             }
 
             
-
             void pushNextRMS(const float newRMS)
             {
                 const double squaredRMS = std::min(newRMS * newRMS, 1.0f);
@@ -189,9 +187,10 @@ public:
             for (size_t channel = 0; channel < meterData.size(); ++channel)
             {
                 meterData[channel].setLevels(lastMeasurement, 0.0f, 0.0f, holdMS);
-                //meterData[channel].reduction = 1.0f;
+                meterData[0].reduction = meterData[0].reduction * 0.9f;
+                meterData[1].reduction = meterData[1].reduction * 0.9f;
             }
-
+            
             updateMeter = true;
         }
 
@@ -238,6 +237,18 @@ public:
             {
                 return 1.0f;
             }
+        }
+
+        float getPrevReduction(const int channel)
+        {
+
+            return meterData.at(size_t(channel)).prevReduction;
+
+        }
+
+        void setPrevReduction(const float newPrev, int channel)
+        {
+            meterData[channel].prevReduction = newPrev;
         }
 
         float getRMSLevel(const int channel) const
@@ -313,9 +324,13 @@ public:
 
         //Gain Reduction Labels
         addAndMakeVisible(grLLabel);
-
+        grLLabel.setEditable(false);
+        grLLabel.setFont({ 10.0f, juce::Font::FontStyleFlags::plain });
+        grLLabel.setJustificationType(juce::Justification::centred);
         addAndMakeVisible(grRLabel);
-
+        grRLabel.setEditable(false);
+        grRLabel.setFont({ 10.0f, juce::Font::FontStyleFlags::plain });
+        grRLabel.setJustificationType(juce::Justification::centred);
         
 
         startTimerHz(refreshRate);
@@ -340,19 +355,20 @@ public:
         
         float rmsDB;
         float peakDB;
-        float reduction;
+        
 
 
         for (auto channel = 0; channel < source->meterData.size() ; ++channel)
         {
             g.setColour(meterColor);
-            juce::Rectangle<float> channelRect = area;
+            juce::Rectangle<float> channelRect = { area.getX(), area.getY() + grLabelOffset, area.getWidth(), area.getHeight() - peakLabelOffset - grLabelOffset };
 
             //Divides the bounds by number of Channels to space them, then sets its postion
             auto meter = levelMeters[channel];
             meter->setBounds(channelRect.getX() + 2.0f, channelRect.getY(),
                 (area.getWidth() / (levelMeters.size()-1)) * (channel + 1) - 4.0f,
-                channelRect.getHeight() - peakLabelOffset);
+                channelRect.getHeight());
+
 
             //sets the left of meters 
             auto prevMeterIn = levelMeters.indexOf(levelMeters[channel - 1]);
@@ -362,15 +378,17 @@ public:
                 meter->setLeft(prevMeter->getRight() + 4);
             }
 
+
             //draws Level Meter
             rmsDB = juce::Decibels::gainToDecibels(source->getRMSLevel(channel), infinity);
             g.fillRect(meter->withTop(meter->getY() + rmsDB * meter->getHeight() / infinity));
+
 
             //draws Peak bar
             peakDB = juce::Decibels::gainToDecibels(source->getMaxLevel(channel), infinity);
             if (peakDB > -80)
             {
-                g.drawHorizontalLine(juce::jmax<float>(peakDB * channelRect.getHeight() / infinity, 0.0f), meter->getX(), meter->getRight());
+                g.drawHorizontalLine(juce::jmax<float>(meter->getY() + peakDB * meter->getHeight() / infinity, grLabelOffset), meter->getX(), meter->getRight());
             }
         
             //draws Clip Bar
@@ -380,29 +398,55 @@ public:
                 g.fillRect(meter->getX(), channelRect.getY(), meter->getWidth(), 5.0f);
             }
             
-            //draws Reduction Meter
-            auto reInfinity = infinity + 50.0f;
-            juce::Rectangle<float> reductionMeter = meter->withWidth(meter->getWidth() / 2);
-            /*if (source->getReductionLevel(channel) == 1.0f)
-            {
-                reductionMeter.withHeight(0.0f);
-            }*/
-            reduction = juce::Decibels::gainToDecibels(source->getReductionLevel(channel), reInfinity);
-            g.setColour(juce::Colours::orange.withAlpha(0.5f));
-            g.fillRect(reductionMeter.withBottom(reductionMeter.getY() + reduction * reductionMeter.getHeight()/ reInfinity));
-            
         }
         
         source->decay();
+
+        //draws Reduction Meter
+        //auto reInfinity = infinity + 50.0f;
+        //auto reductionL = juce::Decibels::gainToDecibels(source->getReductionLevel(0), reInfinity);
+        //auto reductionR = juce::Decibels::gainToDecibels(source->getReductionLevel(1), reInfinity);
+        ////prevReduction = juce::Decibels::gainToDecibels(source->getPrevReduction(channel), reInfinity);
+        //g.setColour(juce::Colours::orange.withAlpha(0.8f));
+        //g.setFont({ "Unispace", 10.0f, juce::Font::FontStyleFlags::plain });
+        //juce::Rectangle<float> labelLRect = { area.getX(), area.getY(), 30.0f, 25.0f };
+        //juce::Rectangle<float> labelRRect = { area.getX() + (area.getWidth() / 2), area.getY(), 30.0f, 25.0f };
+        //if (reductionL < -1.0f || reductionR < -1.0f && refreshGR)
+        //{
+        //    /*juce::Rectangle<float> reductionMeter = meter->withWidth(meter->getWidth() / 2).withBottom(meter->getY() + prevReduction * meter->getHeight() / reInfinity);
+        //    juce::Rectangle<float> reductionLevel = reductionMeter.withBottom(reductionMeter.getY() + reduction * reductionMeter.getHeight() / reInfinity);
+        //    g.fillRect(reductionLevel);
+        //    juce::Rectangle<float> labelRect = { reductionMeter.getX(), reductionLevel.getBottom(), 30.0f, 25.0f };*/
+        //    
+        //   
+        //    g.drawText(grLLabel.getText(), labelLRect, juce::Justification::right);
+        //    g.drawText(grRLabel.getText(), labelRRect, juce::Justification::right);
+        //    
+        //   // source->setPrevReduction(reduction, channel);
+        //    refreshGR = true;
+        //}
+        //else if (refreshGR)
+        //{
+        //    
+        //    g.drawText(grLLabel.getText(), labelLRect, juce::Justification::right);
+        //    g.drawText(grRLabel.getText(), labelRRect, juce::Justification::right);
+
+        //    refreshGR = true;
+        //}
+
+        
     }
 
     void resized() override
     {
         auto area = getLocalBounds().toFloat();
-        metersBackground.setBounds(area.getX(), area.getY(), area.getWidth(), area.getHeight() - peakLabelOffset);
+        metersBackground.setBounds(area.getX(), area.getY() + grLabelOffset, area.getWidth(), area.getHeight() - peakLabelOffset - grLabelOffset);
 
         peakLLabel.setBounds(metersBackground.getX() + 10, metersBackground.getBottom(), 60, 20);
         peakRLabel.setBounds((metersBackground.getWidth()/2) + 10, metersBackground.getBottom(), 60, 20);
+
+        grLLabel.setBounds(metersBackground.getX() + 10, metersBackground.getY() - 20, 60, 20);
+        grRLabel.setBounds(metersBackground.getX() + (metersBackground.getWidth() / 2) + 10, metersBackground.getY() - 20, 60, 20);
     }
 
     void setMeterSource(LevelMeterGetter* src)
@@ -440,8 +484,24 @@ public:
             {
                 auto leftPeak = juce::Decibels::gainToDecibels(juce::jmin<float>(source->getMaxOverallLevel(0), 1.0f));
                 auto rightPeak = juce::Decibels::gainToDecibels(juce::jmin<float>(source->getMaxOverallLevel(1), 1.0f));
+                
                 peakLLabel.setText(juce::String(leftPeak).dropLastCharacters(3) + " dB", juce::dontSendNotification);
                 peakRLabel.setText(juce::String(rightPeak).dropLastCharacters(3) + " dB", juce::dontSendNotification);
+                
+            }
+
+            auto leftGR = juce::Decibels::gainToDecibels(source->getReductionLevel(0));
+            auto rightGR = juce::Decibels::gainToDecibels(source->getReductionLevel(1));
+
+            if (leftGR < -1.0f || rightGR < -1.0f)
+            {
+                grLLabel.setText(juce::String(leftGR).dropLastCharacters(4).trimCharactersAtStart("-") + " dB", juce::dontSendNotification);
+                grRLabel.setText(juce::String(rightGR).dropLastCharacters(4).trimCharactersAtStart("-") + " dB", juce::dontSendNotification);
+            }
+            else
+            {
+                grLLabel.setText("0.0 dB", juce::dontSendNotification);
+                grRLabel.setText("0.0 dB", juce::dontSendNotification);
             }
 
             if (source)
@@ -449,6 +509,8 @@ public:
                 source->resetUpdateMeter();
             }
             repaint();
+
+            refreshGR = true;
         }
     }
     
@@ -478,11 +540,13 @@ private:
     int refreshRate = 30;
     
     int peakLabelOffset = 25;
+    int grLabelOffset = 25;
     juce::Label peakLLabel;
     juce::Label peakRLabel;
 
     juce::Label grLLabel;
     juce::Label grRLabel;
+    bool refreshGR;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LevelMeter)
 };

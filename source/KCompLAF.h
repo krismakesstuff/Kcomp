@@ -223,7 +223,7 @@ public:
         auto bounds = label.getLocalBounds().toFloat();
         auto relativeBounds = label.getBoundsInParent();
 
-        juce::ColourGradient grade;
+        /*juce::ColourGradient grade;
 
 
         grade = juce::ColourGradient::vertical<float>(baseColor.withAlpha(0.1f), baseColor, bounds);
@@ -231,9 +231,12 @@ public:
         
         auto bg = bounds.reduced(1);
 
-        g.setGradientFill(grade);
-        g.fillRoundedRectangle(bg.toFloat(), 1.0f);
-
+        if (!(findColour(juce::Label::ColourIds::backgroundColourId) == juce::Colours::transparentBlack))
+        {
+            g.setGradientFill(grade);
+            g.fillRoundedRectangle(bg.toFloat(), 1.0f);
+        }*/
+       
         g.setFont(label.getFont());
         g.setColour(fontColor);
         //g.drawText(label.getText(true), bounds, juce::Justification::centred);
