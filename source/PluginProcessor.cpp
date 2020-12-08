@@ -437,3 +437,10 @@ juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new KcompAudioProcessor();
 }
+
+juce::String KcompAudioProcessor::getStateForDebug()
+{
+    auto state = parameters.copyState();
+    std::unique_ptr<juce::XmlElement> xml(state.createXml());
+    return xml->toString();
+}

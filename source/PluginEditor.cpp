@@ -19,18 +19,16 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
 {
 
     
-    //Debug Mode
+    //Debug Mode inits
+    logger = new Klog("Debug Window", juce::Colours::black, juce::DocumentWindow::TitleBarButtons::allButtons);
+
     addAndMakeVisible(debugModeButton);
     debugModeButton.setButtonText("Debug Mode");
     debugModeButton.setClickingTogglesState(true);
-    //debugModeButton.setToggleState(false, juce::dontSendNotification);
-    //makeDebugger(true);
-    debugModeButton.onClick = [this] { makeDebugger(debugModeButton.getToggleState()); };
+    debugModeButton.onClick = [this] { showDebugger(debugModeButton.getToggleState()); };
 
-
-    getLookAndFeel().setDefaultLookAndFeel(&kCompLaf);
-    getLookAndFeel().setDefaultSansSerifTypefaceName("Unispace");
-
+    
+    //Look and Feel init, Images init
     juce::File currentApp{ juce::File::getSpecialLocation(juce::File::SpecialLocationType::currentApplicationFile) };
     juce::String titlePath;
     juce::String gridPath;
@@ -50,10 +48,39 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     titleImage = juce::ImageFileFormat::loadFrom(titlePath);
     mainBGImage = juce::ImageFileFormat::loadFrom(gridPath);
 
+    logger->printDebug(titlePath, "Title Image Path");
+    logger->printDebug(gridPath, "Background Image Path");
+    logger->printDebug(audioProcessor.getStateForDebug(), "Boot State");
+
+    getLookAndFeel().setDefaultLookAndFeel(&kCompLaf);
+    getLookAndFeel().setDefaultSansSerifTypefaceName("Unispace");
+
+
+    //Presets Combo Box
+    for (auto i = 0; i < subMenuStrings.size(); i++)
+    {
+        subMenus.insert(i, new juce::PopupMenu());
+        auto subString = subMenuStrings[i];
+        for (auto j = 0; j < subString->size(); j++)
+        {
+            //each submenu has 100 nonconlicting ids
+            subMenus[i]->addItem((subMenuStrings.size() - i) * 100 + ( j + 1) , subString->getReference(j));
+        }
+    }
+
+    addAndMakeVisible(presetsCombo);
+    presetsCombo.addSectionHeading("Presets");
+    presetsCombo.addSeparator();
+    auto* root = presetsCombo.getRootMenu();
+    for (auto heading = 0; heading < presetsHeadingStrings.size(); heading++)
+    {
+        root->addSubMenu(presetsHeadingStrings[heading], *subMenus[heading]);
+    }
+    presetsCombo.onChange = [this] { logger->printDebug(juce::String(presetsCombo.getSelectedId()), "Currently Selected Preset ID"); };
+    
 
     //Input 
     addAndMakeVisible(inputSlider);
-    
     inputSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
     inputSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 45, 20);
     inputSlider.setColour(juce::Slider::ColourIds::textBoxOutlineColourId, juce::Colours::transparentBlack);
@@ -65,7 +92,6 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     inputLabel.attachToComponent(&inputSlider, false);
     inputLabel.setJustificationType(juce::Justification::centred);
     inputLabel.setFont(kCompLaf.mainFont);
-    
 
     //Threshold
     addAndMakeVisible(thresholdSlider);
@@ -203,6 +229,7 @@ KcompAudioProcessorEditor::KcompAudioProcessorEditor(KcompAudioProcessor& p, juc
     outputGainLabel.setFont(kCompLaf.mainFont);
 
 
+
     setResizable(true, true);
     setResizeLimits(560, 400, 1260, 900);
     setSize (840, 600);
@@ -219,6 +246,9 @@ KcompAudioProcessorEditor::~KcompAudioProcessorEditor()
     }
 
     logger.deleteAndZero();
+
+    subMenus.clear();
+    subMenuStrings.clear();
 
 }
 
@@ -246,7 +276,6 @@ void KcompAudioProcessorEditor::paint (juce::Graphics& g)
     //-----Fills-----//
     
     
-
     //Component Background
     g.drawImageWithin(mainBGImage, getX(), getY(), getWidth(), getHeight(), juce::RectanglePlacement::fillDestination);
     
@@ -275,11 +304,7 @@ void KcompAudioProcessorEditor::paint (juce::Graphics& g)
     
     //Middle of Rectangle
     
-    /*juce::ColourGradient midGrade = juce::ColourGradient::horizontal<int>(kCompLaf.controlsBGColor.darker(), kCompLaf.controlsBGColor.darker(), centerBG);
-    midGrade.addColour(0.25, kCompLaf.controlsBGColor);
-    midGrade.addColour(0.5, kCompLaf.spectrumColor);
-    midGrade.addColour(0.75, kCompLaf.controlsBGColor);
-    g.setGradientFill(midGrade);*/
+    
 
     juce::ColourGradient leftCGrade = juce::ColourGradient::horizontal<int>(kCompLaf.controlsBGColor.darker(), kCompLaf.spectrumColor, leftCenterBG);
     //leftCGrade.addColour(0.5 ,kCompLaf.controlsBGColor.brighter());
@@ -303,9 +328,13 @@ void KcompAudioProcessorEditor::resized()
 {
     auto area = getLocalBounds();
 
-    titleRect.setBounds(0, 0, area.getWidth() /*- (area.getWidth() - 100)*/, 100);
+    
 
-    debugModeButton.setBounds(titleRect.getRight() - 100, getY() + 10, 50, 30);
+    titleRect.setBounds(0, 0, area.getWidth(), 100);
+
+    debugModeButton.setBounds( 20, 40, 50, 25);
+
+    presetsCombo.setBounds(titleRect.getRight() - 150, getY() + 40, 110, 25);
 
     controlsBackground = area.reduced(10);
     controlsBackground.setLeft(area.getX() + 10);
@@ -358,27 +387,27 @@ juce::Button& KcompAudioProcessorEditor::getActiveRatio()
     //DBG("Called");
     if (ratio1Button.getToggleState())
     {
-        DBG(ratioOneParam_ID);
+       // DBG(ratioOneParam_ID);
         return ratio1Button;
     }
     else if (ratio2Button.getToggleState())
     {
-        DBG(ratioTwoParam_ID);
+       // DBG(ratioTwoParam_ID);
         return ratio2Button;
     }
     else if (ratio3Button.getToggleState())
     {
-        DBG(ratioThreeParam_ID);
+       // DBG(ratioThreeParam_ID);
         return ratio3Button;
     }
     else if (ratio4Button.getToggleState())
     {
-        DBG(ratioFourParam_ID);
+       // DBG(ratioFourParam_ID);
         return ratio4Button;
     }
     else
     {
-        DBG("ERROR");
+        logger->printDebug("ERROR", "RATIO ERROR");
     }
 
 }
@@ -394,32 +423,13 @@ void KcompAudioProcessorEditor::updateRatioState(juce::Button* activeButton, juc
 
     activeButton->setToggleState(true,juce::dontSendNotification);
     audioProcessor.setRatio(ratioID);
+    logger->printDebug(ratioID, "Ratio Selected");
     repaint();
 }
 
-void KcompAudioProcessorEditor::makeDebugger(bool makeActive)
+void KcompAudioProcessorEditor::showDebugger(bool shouldBeVisible)
 {
-    if (makeActive)
-    {
-        logger = new Klog("Debug Window", juce::Colours::black, juce::DocumentWindow::TitleBarButtons::allButtons);
-        juce::File cwd{ juce::File::getCurrentWorkingDirectory() };
-        juce::File hostApp{ juce::File::getSpecialLocation(juce::File::SpecialLocationType::hostApplicationPath) };
-        juce::File currentApp{ juce::File::getSpecialLocation(juce::File::SpecialLocationType::currentApplicationFile) };
-        juce::File currentExe{ juce::File::getSpecialLocation(juce::File::SpecialLocationType::currentExecutableFile) };
-        juce::File globalApp{ juce::File::getSpecialLocation(juce::File::SpecialLocationType::userHomeDirectory) };
-
-        logger->printDebug(cwd.getFullPathName(), "Current Working Drive");
-        logger->printDebug(hostApp.getFullPathName(), "Host App");
-        logger->printDebug(currentApp.getFullPathName(), "Current App");
-        logger->printDebug(currentExe.getFullPathName(), "Current Exe");
-        logger->printDebug(globalApp.getFullPathName(), "User Home");
-
-
-    }
-    else
-    {
-        logger.deleteAndZero();
-    }
+    logger->setDebugMode(shouldBeVisible);
 }
 
 

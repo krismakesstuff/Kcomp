@@ -225,16 +225,6 @@ public:
 
         juce::ColourGradient grade;
 
-        
-
-        /*if (relativeBounds.getX() > label.getPeer()->getBounds().getWidth() / 2)
-        {
-            grade = juce::ColourGradient::horizontal<float>(baseColor, baseColor.withAlpha(0.1f), bounds);
-        }
-        else
-        {
-            grade = juce::ColourGradient::horizontal<float>(baseColor.withAlpha(0.1f), baseColor, bounds);
-        }*/
 
         grade = juce::ColourGradient::vertical<float>(baseColor.withAlpha(0.1f), baseColor, bounds);
         grade.multiplyOpacity(0.8f);
@@ -249,6 +239,31 @@ public:
         //g.drawText(label.getText(true), bounds, juce::Justification::centred);
 
         g.drawFittedText(label.getText(true), bounds.toNearestInt().reduced(2), juce::Justification::centred,1,0.0f);
+
+    }
+
+    void drawComboBox(juce::Graphics& g, int width, int height, bool isButtonDown, int buttonX, int buttonY, int buttonW, int buttonH, juce::ComboBox& box) override
+    {
+
+
+        auto cornerSize = box.findParentComponentOfClass<juce::ChoicePropertyComponent>() != nullptr ? 0.0f : 3.0f;
+        juce::Rectangle<int> boxBounds(0, 0, width, height);
+
+        g.setColour(box.findColour(juce::ComboBox::backgroundColourId));
+        g.fillRoundedRectangle(boxBounds.toFloat(), cornerSize);
+
+        g.setColour(box.findColour(juce::ComboBox::outlineColourId));
+        g.drawRoundedRectangle(boxBounds.toFloat().reduced(0.5f, 0.5f), cornerSize, 1.0f);
+
+        juce::Rectangle<int> arrowZone(width - 30, 0, 20, height);
+        juce::Path path;
+        path.startNewSubPath((float)arrowZone.getX() + 3.0f, (float)arrowZone.getCentreY() - 2.0f);
+        path.lineTo((float)arrowZone.getCentreX(), (float)arrowZone.getCentreY() + 3.0f);
+        path.lineTo((float)arrowZone.getRight() - 3.0f, (float)arrowZone.getCentreY() - 2.0f);
+
+        g.setColour(box.findColour(juce::ComboBox::arrowColourId).withAlpha((box.isEnabled() ? 0.9f : 0.2f)));
+        g.strokePath(path, juce::PathStrokeType(2.0f));
+        
 
     }
 

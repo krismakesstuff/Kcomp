@@ -37,7 +37,7 @@ public:
     
     void updateRatioState(juce::Button*, juce::String);
 
-    void makeDebugger(bool makeActive);
+    void showDebugger(bool shouldBeVisible);
 
     /*void timerCallback() override;*/
 
@@ -50,6 +50,19 @@ private:
         ratioButtonGroup = 42
     };
 
+    enum PresetsMenuIds
+    {
+        drums_ID,
+        bass_ID,
+        vocals_ID,
+        guitar_ID,
+        keys_ID,
+        user_ID
+    };
+
+    juce::TextButton debugModeButton;
+    SafePointer<Klog> logger;
+
     juce::Rectangle<int> controlsBackground;
 
     juce::Image titleImage;
@@ -58,6 +71,17 @@ private:
     juce::Image mainBGImage;
     juce::Rectangle<float> mainBGRect;
     
+    juce::ComboBox presetsCombo;
+    juce::StringArray presetsHeadingStrings{"Drums", "Bass", "Vocals", "Guitar", "Keys", "User"};
+    juce::StringArray drumsSubMenuStrings{ "FAT", "Thin", "Distorted", "Peak Catcher" };
+    juce::StringArray bassSubMenuStrings{ "Thick", "Toned Back", "Chunky", "Balanced" };
+    juce::StringArray vocalsSubMenuStrings{ "Upfront", "Warm", "Clean", "ASMR" };
+    juce::StringArray guitarSubMenuStrings{ "Attacked", "Crunchy", "Blown", "Mild" };
+    juce::StringArray keysSubMenuStrings{ "Destroyed", "Just A Touch", "Soft" };
+    juce::StringArray userSubMenuStrings{"...", "..", "."};
+    juce::Array<juce::StringArray*> subMenuStrings{&drumsSubMenuStrings, &bassSubMenuStrings, &vocalsSubMenuStrings, &guitarSubMenuStrings, &keysSubMenuStrings, &userSubMenuStrings};
+    juce::OwnedArray<juce::PopupMenu> subMenus;
+
     juce::Slider inputSlider; 
     juce::Label inputLabel{juce::String(), "Input"};
     std::unique_ptr<SliderAttachment> inputGainAttachment;
@@ -105,24 +129,12 @@ private:
     //juce::Label preRMSLabel{juce::String() ,"666"};
     //juce::Label postRMSLabel{juce::String(), "777"};
     
-    juce::TextButton debugModeButton;
-    SafePointer<Klog> logger;
-    
-
     LevelMeter levelMeter;
     
-
-
     juce::AudioProcessorValueTreeState& valueTreeState;
     KcompAudioProcessor& audioProcessor;
 
-
     KCompLAF kCompLaf;
-
-
-
-    //Log logger;
-    
 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (KcompAudioProcessorEditor)

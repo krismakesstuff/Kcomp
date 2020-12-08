@@ -97,6 +97,7 @@ public:
     //==============================================================================
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
+    juce::String getStateForDebug();
 
 private:
     
@@ -115,18 +116,7 @@ private:
     Gain outputGain;
     juce::dsp::DryWetMixer<float> dryWet;
 
-    /*std::atomic<float>* inputGainParam;
-    std::atomic<float>* makeUpGainParam;
-    std::atomic<float>* ratioOneParam;
-    std::atomic<float>* ratioTwoParam;
-    std::atomic<float>* ratioThreeParam;
-    std::atomic<float>* ratioFourParam;
-    std::atomic<float>* thresholdParam;
-    std::atomic<float>* attackParam;
-    std::atomic<float>* releaseParam;
-    std::atomic<float>* dryWetParam;
-    std::atomic<float>* filterParam;*/
-
+    
     float ratioOne{ 1.5f };
     float ratioTwo{ 5.0f };
     float ratioThree{ 10.0f };
