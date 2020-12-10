@@ -343,13 +343,13 @@ void KcompAudioProcessorEditor::resized()
     controlsBackground.setBottom(getBottom() - 45);
 
     //Center Section
-    thresholdSlider.setBounds((controlsBackground.getWidth() / 4.5) + 30, controlsBackground.getY() + 40, controlsBackground.getWidth() / 7, controlsBackground.getHeight() - 57);
+    thresholdSlider.setBounds((controlsBackground.getWidth() / 4.5) + 30, controlsBackground.getY() + 65, controlsBackground.getWidth() / 7, controlsBackground.getHeight() - 87);
     
     levelMeter.setBounds(thresholdSlider.getRight() + 10, controlsBackground.getY() + 50, controlsBackground.getWidth()/5, controlsBackground.getHeight() - 55);
     gainReductionLabel.setBounds(levelMeter.getX() + (levelMeter.getWidth() / 2) - 20, levelMeter.getY() - 5, 40, 20);
     peakLabel.setBounds(levelMeter.getX() + (levelMeter.getWidth() / 2) - 20, levelMeter.getBottom() - 15 , 40, 20);
 
-    makeUpGainSlider.setBounds(levelMeter.getRight() + 10, controlsBackground.getY() + 40, controlsBackground.getWidth() / 7, controlsBackground.getHeight() - 57);
+    makeUpGainSlider.setBounds(levelMeter.getRight() + 10, controlsBackground.getY() + 65, controlsBackground.getWidth() / 7, controlsBackground.getHeight() - 87);
 
     //preRMSLabel.setBounds(inputSlider.getRight() + 10, controlsBackground.getBottom() - 20, 50, 20);
     //postRMSLabel.setBounds(preRMSLabel.getRight() + 5, controlsBackground.getBottom() - 20, 50, 20);
